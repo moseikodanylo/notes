@@ -1,0 +1,31 @@
+{
+ "name": "Нотатник",
+ "short_name": "Нотатник",
+ "lang": "uk",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#f6f6f3",
+ "theme_color": "#2f6fed",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any maskable"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ],
+ "id": "./index.html",
+ "display_override": [
+  "standalone",
+  "minimal-ui"
+ ],
+ "orientation": "portrait",
+ "description": "Особисті нотатки"
+}
