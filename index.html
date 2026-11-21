@@ -47,10 +47,11 @@ html,body{overscroll-behavior:none}#main{overscroll-behavior-y:none}body{-webkit
 #m{z-index:30}#tst{z-index:40}.box{position:relative}.box>h3{padding-right:36px}.x{position:absolute;right:8px;top:8px;width:auto;padding:2px 9px}
 .ed:empty:before{content:attr(data-ph)}.dim{opacity:.7}.dim b{color:var(--mut);font-weight:400}
 .dme{font-size:14px;line-height:14px}.dmi{width:16px;height:16px;border-radius:4px;display:block;margin:0 auto;object-fit:cover}.wk .dme{font-size:28px;line-height:32px}.wk .dmi{width:34px;height:34px}
+.row[data-gh]{opacity:.45;background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(128,128,128,.2) 6px 8px)}[data-lp]{-webkit-touch-callout:none;user-select:none}.bar h2{cursor:pointer}
 </style></head><body>
 <div id="app"><div id="main"></div>
 <nav><button id="n1" onclick="tab('home')">🏠 Домівка</button><button id="n2" onclick="tab('set')">⚙️ Налаштування</button></nav></div>
-<button id="fab" onclick="fabGo()">＋</button><div id="m"></div><div id="sb"></div><div id="eb" onmousedown="event.preventDefault()"></div><div id="cv">📒</div><div id="lk"></div><div id="tst" onclick="this.style.display='none'"></div>
+<button id="fab">＋</button><div id="m"></div><div id="sb"></div><div id="eb" onmousedown="event.preventDefault()"></div><div id="cv">📒</div><div id="lk"></div><div id="tst" onclick="this.style.display='none'"></div>
 <script>
 let DB={cats:[],brs:[],notes:[],tags:[]},S={v:"home",id:null,cal:"month",d:new Date(),sort:{},q:""},stack=[],H,lastR,ED,SEL=null,lp,lpd,PIN_B="",PIN_OK,PIN_CB,hid=0;
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36),now=()=>Date.now();
@@ -58,7 +59,8 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",
 const fdt=t=>new Date(t).toLocaleString(LC(),{dateStyle:"short",timeStyle:"short"}),ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 const evTs=e=>new Date(e.date+"T"+(e.time||"00:00")).getTime(),evK=n=>n.events.length?Math.min(...n.events.map(evTs)):9e15;
 const mk=o=>Object.assign({id:uid(),created:now(),edited:now()},o),G=(a,id)=>DB[a].find(x=>x.id==id);
-const cats=()=>DB.cats.filter(x=>!x.del),brs=c=>DB.brs.filter(x=>!x.del&&(!c||x.cat==c)),notes=b=>DB.notes.filter(x=>!x.del&&(!b||x.br==b));
+var SH={get c(){return !!S.hv},b:0,n:0};const CH=x=>(DB.cats.find(y=>y.id==x.cat)||{}).hide,NV=x=>{const b=DB.brs.find(y=>y.id==x.br)||{};return(SH.b||!b.hide)&&(SH.c||!CH(b))};
+const cats=()=>DB.cats.filter(x=>!x.del&&(SH.c||!x.hide)),brs=c=>DB.brs.filter(x=>!x.del&&(!c||x.cat==c)&&(SH.b||!x.hide)&&(SH.c||!CH(x))),notes=b=>DB.notes.filter(x=>!x.del&&(!b||x.br==b)&&(SH.n||!x.hide)&&NV(x));
 const brOf=n=>G("brs",n.br),catOf=b=>b&&G("cats",b.cat),cur=()=>G("notes",S.id);
 // ---------- storage (IndexedDB, autosave) ----------
 function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open("notesdb",1);r.onupgradeneeded=()=>r.result.createObjectStore("k");r.onsuccess=()=>res(r.result);r.onerror=()=>rej()}catch(e){rej(e)}})}
@@ -174,7 +176,7 @@ function expNote(){exp(toTxt(cur()),"Експорт у TXT")}function expAll(){e
 function impAll(){show(`<h3>Імпорт</h3><p class="mut">Вставте раніше скопійований текст копії. Поточні дані буде замінено.</p><textarea id="xt" style="min-height:160px"></textarea><div class="bt"><button onclick="cl()">Скасувати</button><button class="pri" onclick="doImp()">Відновити</button></div>`)}
 function doImp(){try{const o=JSON.parse($("#xt").value);if(!Array.isArray(o.cats)||!Array.isArray(o.notes))throw 0;DB=o;DB.tags=DB.tags||[];inbox();flush();cl();tab("home");toast("Дані відновлено")}catch(e){toast("Невірний формат копії")}}
 // ---------- manual order, selection, links, PIN ----------
-const RA=(t,x)=>`data-t="${t}" data-i="${x.id}"${cs(x)}`;
+const RA=(t,x)=>`data-t="${t}" data-i="${x.id}"${cs(x)}${x.gh?' data-gh="1"':""}`;
 const arr=(t,id,k)=>sk(k)=="man"?`<span style="float:right"><button onclick="event.stopPropagation();mv('${t}','${id}',-1)">↑</button> <button onclick="event.stopPropagation();mv('${t}','${id}',1)">↓</button></span>`:"";
 function mv(t,id,d){const x=G(t,id),k=t=="cats"?"c":t=="brs"?"b":"n";const L=sortBy(t=="cats"?cats():t=="brs"?brs(x.cat):notes(x.br),k),i=L.findIndex(y=>y.id==id),j=i+d;if(j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];L.forEach((y,q)=>y.ord=q);save();R()}
 const mn=$("#main");
@@ -212,7 +214,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)hid=now();e
 // ================= v2.0 =================
 let LK,RCB,LB_IDS,PIN_A,EP,py=null;
 const ST=()=>DB.st=Object.assign({th:"sys",fs:100,bs:100,ic:1,cl:1,lb:1},DB.st||{});
-const ic=x=>ST().ic?(x.img?`<img class="ic" src="${x.img}">`:x.emo?`<span class="ic">${esc(x.emo)}</span>`:""):"";
+const ic0=x=>ST().ic?(x.img?`<img class="ic" src="${x.img}">`:x.emo?`<span class="ic">${esc(x.emo)}</span>`:""):"";
 const cs=x=>ST().cl&&x.col?` style="border-left:5px solid ${x.col}"`:"";
 const lt=t=>{const d=new Date(t);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
 const tm5=t=>new Date(t).toTimeString().slice(0,5);
@@ -225,7 +227,7 @@ function resetSt(){DB.st=null;save();applyStyle();R()}
 // ---- countdown / temp notes ----
 const cdt=e=>{const m=Math.floor((e-now())/6e4);if(m<=0)return"⏳ видаляється…";const d=Math.floor(m/1440),h=Math.floor(m%1440/60);return"⏳ до видалення: "+(d?d+" д ":"")+(h?h+" г ":"")+(m%60)+" хв"};
 function sweep(){const T=now();if(DB.notes.some(n=>n.exp&&n.exp<=T)){DB.notes=DB.notes.filter(n=>!(n.exp&&n.exp<=T));save();R()}}
-setInterval(()=>{sweep();document.querySelectorAll(".cdn").forEach(e=>e.textContent=cdt(+e.dataset.e))},20000);
+setInterval(()=>{sweep();document.querySelectorAll(".cdn").forEach(e=>e.textContent=trs(cdt(+e.dataset.e)))},20000);
 const tpSel=()=>`<label>Видалити безповоротно через</label><select id="tp">${[[36e5,"1 годину"],[216e5,"6 годин"],[864e5,"1 день"],[6048e5,"7 днів"],[2592e6,"30 днів"]].map(x=>`<option value="${x[0]}">${x[1]}</option>`).join("")}</select>`;
 function tmpNew(){ask("Тимчасова нотатка",[],()=>mkNote(inbox(),now()+ +$("#tp").value),tpSel())}
 function tmpSet(){ask("Зробити тимчасовою",[],()=>{cur().exp=now()+ +$("#tp").value;save();R()},tpSel())}
@@ -281,7 +283,7 @@ for(let i=0;i<(m?42:7);i++)days.push(new Date(st.getFullYear(),st.getMonth(),st.
 ttl=m?d.toLocaleDateString(LC(),{month:"long",year:"numeric"}):days[0].toLocaleDateString(LC(),{day:"numeric",month:"short"})+" – "+days[6].toLocaleDateString(LC(),{day:"numeric",month:"short"})}
 const nm={month:"Тиждень",week:"Список",list:"Місяць"}[md];
 return`<div class="cal"><div class="hd">${md!="list"?`<button onclick="cm(-1)">‹</button><b style="flex:1;text-align:center" onclick="pickYM()">${md=="month"?ME()+" ":""}${ttl} ▾</b><button onclick="cm(1)">›</button>`:`<b style="flex:1">Усі записи</b>`}</div><div class="tb"><button onclick="S.cal='${{month:"week",week:"list",list:"month"}[md]}';R()">▦ ${nm}</button><button class="${F?"pri":""}" onclick="S.fl=!S.fl;R()">⏱ ${F?"Лише з позначками":"Усі нотатки"}</button></div>`+
-(md=="list"?calList():`<div class="cg">${["Пн","Вт","Ср","Чт","Пт","Сб","Нд"].map(x=>`<div class="wh">${x}</div>`).join("")}</div><div class="cg ${m?"":"wk"}">${days.map(x=>{const k=ymd(x),i=ix[k]||{};return`<div class="cd ${m&&x.getMonth()!=d.getMonth()?"o":""} ${k==T?"t":""}" data-k="${k}" onclick="nav('day','${k}')">${x.getDate()}${dmH(k)}<i>${i.p?'<b style="background:var(--pl)"></b>':""}${i.a?'<b style="background:var(--pa)"></b>':""}${i.c?'<b style="background:var(--cr)"></b>':""}</i></div>`}).join("")}</div>`)+
+(md=="list"?calList():`<div class="cg">${["Пн","Вт","Ср","Чт","Пт","Сб","Нд"].map(x=>`<div class="wh">${x}</div>`).join("")}</div><div class="cg ${m?"":"wk"}">${days.map(x=>{const k=ymd(x),i=ix[k]||{};return`<div class="cd ${m&&x.getMonth()!=d.getMonth()?"o":""} ${k==T?"t":""}" data-k="${k}"${dmC(k)} onclick="nav('day','${k}')">${x.getDate()}${dmH(k)}<i>${i.p?'<b style="background:var(--pl)"></b>':""}${i.a?'<b style="background:var(--pa)"></b>':""}${i.c?'<b style="background:var(--cr)"></b>':""}</i></div>`}).join("")}</div>`)+
 `<small class="mut"><span style="color:var(--pl)">●</span> заплановані <span style="color:var(--pa)">●</span> минулі/позначки <span style="color:var(--cr)">●</span> нотатки</small></div>`}
 function calList(){const T=ymd(new Date()),M={};const add=(k,t,h)=>(M[k]=M[k]||[]).push([t,h]);
 notes().forEach(n=>{const nm=esc(n.name||"Без назви"),go=`onclick="nav('note','${n.id}')"`;if(!S.fl){n.events.forEach(e=>add(e.date,e.time||"",`<div class="li" ${go}>${e.type=="plan"?"📅":"✔️"} ${e.time||""} ${esc(e.title)} <small>${nm}</small></div>`));add(ymd(new Date(n.created)),tm5(n.created),`<div class="li" ${go}>📝 ${tm5(n.created)} <small>${nm}</small></div>`)}
@@ -619,6 +621,280 @@ const _tr2=`Редагувати інформацію|Edit info|Fix da info
 Дані відновлено|Data restored|Sh*t restored
 Невірний файл копії|Invalid backup file|Busted backup file
 Порожньо|Empty|Empty as hell`.split("\n").map(l=>l.split("|"));_tr2.forEach(r=>{if(!TR.some(t=>t[0]==r[0]))TR.push(r)});TR.sort((a,b)=>b[0].length-a[0].length);
+// ================= v5.0 =================
+let hp,hl=0,ft,fl=0;
+const dmC=k=>{const x=(DB.dm||{})[k];return x&&x.col?` style="background:color-mix(in srgb,${x.col} 35%,transparent)"`:""};
+function ic(x){return(x.hide?"🙈 ":"")+ic0(x)}
+function togHide(t,id){const x=G(t,id);x.hide?delete x.hide:x.hide=1;save();back()}
+function cbMenu(t,id){const x=G(t,id);show(`<h3>${esc(x.name)}</h3><button class="menu" onclick="cl();editCB('${t}','${id}')">✎ Редагувати</button><button class="menu" onclick="cl();lookEd('${t}','${id}')">🎨 Вигляд: картинка, емодзі, колір</button>${x.inbox?"":`<button class="menu" onclick="cl();togHide('${t}','${id}')">${x.hide?"👁 Зробити видимою":"🙈 Приховати"}</button>`}<button class="menu" onclick="cl();delAsk('${t}','${id}')">🗑 У кошик</button><div class="bt"><button onclick="cl()">Закрити</button></div>`)}
+const _mn5=menu;menu=function(){_mn5();const n=cur(),b=document.querySelector("#m .box .bt");b&&b.insertAdjacentHTML("beforebegin",`<button class="menu" onclick="cl();togHide('notes','${n.id}')">${n.hide?"👁 Зробити видимою":"🙈 Приховати"}</button>`);tr($("#m"))};
+// selection: ghost, hide, edit, look
+function renderSel(){const sb=$("#sb");document.querySelectorAll(".row[data-t]").forEach(r=>r.classList.toggle("sel",!!SEL&&r.dataset.t==SEL.t&&SEL.ids.has(r.dataset.i)));$("#fab").style.display=!SEL&&["home","cat","br"].includes(S.v)?"":"none";if(!SEL){sb.style.display="none";return}sb.style.display="flex";sb.innerHTML=`<b style="flex:1">Вибрано: ${SEL.ids.size}</b><button onclick="selAll()">Усі</button><button onclick="selGh()">👻</button><button class="pri" onclick="selAct()">Дії</button><button onclick="endSel()">✕</button>`;tr(sb)}
+function selGh(){const L=[...SEL.ids].map(i=>G(SEL.t,i)),a=L.every(x=>x.gh);L.forEach(x=>a?delete x.gh:x.gh=1);save();endSel();R()}
+function selHide(v){[...SEL.ids].forEach(i=>{const x=G(SEL.t,i);if(x.inbox)return;v?x.hide=1:delete x.hide});save();endSel();R()}
+function selAct(){const t=SEL.t,b=(a,l)=>`<button class="menu" onclick="cl();${a}">${l}</button>`,aH=[...SEL.ids].every(i=>G(t,i).hide);show(`<h3>Вибрано: ${SEL.ids.size}</h3>`+b("selEd()","✎ Назва / опис")+b("selLook()","🎨 Вигляд: картинка, емодзі, колір")+(t=="notes"?b("selMove()","📂 Перемістити в гілку")+b("selTag()","🏷 Додати тег")+b("selPin()","📌 Закріпити / відкріпити")+b("lbEd([...SEL.ids])","🔖 Мітка"):"")+(t=="brs"?b("selMove()","📂 Перемістити в категорію"):"")+b(`selHide(${aH?0:1})`,aH?"👁 Зробити видимою":"🙈 Приховати")+b("selDel()","🗑 У кошик")+'<div class="bt"><button onclick="cl()">Закрити</button></div>')}
+function selEd(){const t=SEL.t,ids=[...SEL.ids],k=t=="notes"?"sub":"desc",one=ids.length==1,x=G(t,ids[0]);ask("Назва / опис",[["Назва"+(one?"":" (порожньо — не змінювати)"),one?x.name||"":""],["Опис"+(one?"":" (порожньо — не змінювати)"),one?x[k]||"":"","area"]],v=>{ids.forEach(i=>{const y=G(t,i);if(v[0].trim())y.name=v[0].trim();if(one||v[1]!=="")y[k]=v[1];y.edited=now()});save();endSel();R()})}
+function selLook(){LK={t:SEL.t,id:null,ids:[...SEL.ids],emo:"",img:"",col:""};lookR()}
+const _lo5=lookOk;lookOk=function(){if(LK.t=="day"){DB.dm=DB.dm||{};const o={};["emo","img","col"].forEach(k=>LK[k]&&(o[k]=LK[k]));Object.keys(o).length?DB.dm[LK.id]=o:delete DB.dm[LK.id];save();cl();R()}else if(LK.ids){LK.ids.forEach(i=>{const x=G(LK.t,i);["emo","img","col"].forEach(k=>LK[k]&&(x[k]=LK[k]));x.edited=now()});save();cl();endSel();R()}else _lo5()};
+function dayEd(k){const x=(DB.dm||{})[k]||{};LK={t:"day",id:k,emo:x.emo||"",img:x.img||"",col:x.col||""};lookR()}
+// title tap to edit, long-press headings, long-press +
+mn.addEventListener("click",e=>{if(hl){hl=0;e.stopImmediatePropagation();e.preventDefault();return}if(e.target.closest(".bar h2")&&(S.v=="cat"||S.v=="br"))editCB(S.v=="cat"?"cats":"brs",S.id)},true);
+mn.addEventListener("pointerdown",()=>{hl=0;dlp=0},true);
+mn.addEventListener("pointerdown",e=>{const t=e.target.closest("[data-lp]");if(!t||!t.dataset.lp)return;hl=0;hp=setTimeout(()=>{hl=1;lpGo(t.dataset.lp)},500)});
+["pointerup","pointermove","pointercancel"].forEach(k=>mn.addEventListener(k,()=>clearTimeout(hp)));
+function lpGo(k){try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}if(k=="c"){S.hv=!S.hv;toast(S.hv?"Приховані категорії показано":"Приховані категорії сховано")}else if(k=="b"){SH.b=!SH.b;toast(SH.b?"Приховані гілки показано":"Приховані гілки сховано")}else if(k=="n"){SH.n=!SH.n;toast(SH.n?"Приховані нотатки показано":"Приховані нотатки сховано")}else{const s=ST();s.hn=!s.hn;save();toast(s.hn?"Підказки відкрито":"Підказки сховано")}R()}
+const _R5=R;R=function(){_R5();const h=mn.querySelector("#hb .hd h3");if(h)h.dataset.lp={home:"c",cat:"b",br:"n"}[S.v]||"";if(S.v=="set"&&!S.ss){const t=mn.querySelector("h2");if(t)t.dataset.lp="s"}};
+const fb=$("#fab");fb.addEventListener("pointerdown",()=>{fl=0;ft=setTimeout(()=>{fl=1;try{navigator.vibrate&&navigator.vibrate(30)}catch(e){}mkNote(inbox())},500)});["pointerup","pointerleave","pointercancel"].forEach(k=>fb.addEventListener(k,()=>clearTimeout(ft)));fb.addEventListener("click",()=>{if(fl){fl=0;return}fabGo()});
+// export note: doc, rtf, ...
+function rtf(t){return"{\\rtf1\\ansi\\deff0 "+t.split("").map(c=>{const k=c.charCodeAt(0);return c=="\n"?"\\par ":k>127?"\\u"+(k>32767?k-65536:k)+"?":"\\{}".includes(c)?"\\"+c:c}).join("")+"}"}
+function expNote(){const n=cur(),f=(n.name||"note").replace(/[^\p{L}\p{N}]+/gu,"_"),b=(a,l)=>`<button class="menu" onclick="${a}">${l}</button>`;show(`<h3>Експорт нотатки</h3>`+b(`dl('${f}.doc','<html><head><meta charset=utf-8></head><body><h1>'+esc(cur().name)+'</h1>'+cur().html+'</body></html>','application/msword')`,"DOC (Word)")+b(`dl('${f}.rtf',rtf(cur().name+'\\n\\n'+toTxt(cur())),'application/rtf')`,"RTF (простий документ)")+b(`dl('${f}.txt',toTxt(cur()))`,"TXT")+b(`dl('${f}.html','<meta charset=utf-8><h1>'+esc(cur().name)+'</h1>'+cur().html,'text/html')`,"HTML")+b(`dl('${f}.json',JSON.stringify(cur()),'application/json')`,"JSON")+b("cl();exp(toTxt(cur()),'Копіювати текст')","Копіювати текст"))}
+// settings: security info, hints
+const SECI=`<h3>Як захищені ваші дані</h3><ul class="mut" style="padding-left:18px"><li>Нотатки зберігаються лише на цьому пристрої. Застосунок нічого не надсилає в інтернет.</li><li>База даних у пам’яті пристрою зашифрована (AES-256-GCM). Ключ створюється на пристрої й не може бути витягнутий.</li><li>Кеш застосунку містить лише код і значки, а не ваші тексти.</li><li>PIN і ключова фраза зберігаються всередині зашифрованої бази.</li><li>Файли резервних копій можна захистити паролем (PBKDF2 + AES-256-GCM). Без пароля їх неможливо відкрити.</li><li>Якщо очистити дані браузера або видалити застосунок, нотатки зникнуть. Робіть копії.</li></ul>`;
+const HINTS={uk:["Утримайте «Категорії» на домівці: показати чи сховати приховані категорії (так само працює свайп вниз від верху).","Утримайте «Гілки» чи «Нотатки» у відкритій категорії або гілці: показати чи сховати приховані. Пошук бачить їх, лише коли вони показані.","Утримайте нотатку, гілку чи категорію: режим вибору з кнопками «Усі», 👻 (позначити неактуальною) і «Дії».","«Дії» працюють для кількох виділених одразу: назва, опис, картинка, емодзі, колір, мітка, приховати.","Торкніться назви вгорі відкритої категорії чи гілки: швидко змінити назву й опис.","Утримайте кнопку ＋: миттєва швидка нотатка у «Вхідні».","Утримайте день у календарі: смайлик, картинка або колір дня. Торкніться місяця: швидкий вибір року й місяця. Свайп вліво чи вправо перегортає.","Утримайте «Налаштування»: показати чи сховати цей пункт.","У нотатці: «Аа» форматує виділене, ⊕ вставляє фото, таблицю, посилання, чекліст. ↶ ↷ зверху.","Телефони й посилання в тексті стають синіми: дотик пропонує подзвонити чи додати контакт.","Тимчасова нотатка: ⏳ у меню створення; у нотатці її можна зробити постійною.","Біометрія й ключова фраза для PIN: Налаштування → Безпека."],en:["Hold “Categories” on Home to show or hide hidden categories (a pull down from the top works too).","Hold “Branches” or “Notes” inside an open category or branch to show or hide hidden ones. Search sees them only while shown.","Hold a note, branch or category for selection mode: “All”, 👻 (mark as inactive) and “Actions”.","“Actions” work on several selected items at once: name, description, picture, emoji, colour, label, hide.","Tap the title at the top of an open category or branch to quickly edit its name and description.","Hold the ＋ button for an instant quick note in Inbox.","Hold a day in the calendar for an emoji, picture or colour. Tap the month for a quick year and month picker. Swipe left or right to turn pages.","Hold “Settings” to show or hide this item.","In a note: “Aa” formats the selection, ⊕ inserts a photo, table, link or checklist. ↶ ↷ are at the top.","Phones and links in text turn blue: tap to call or add a contact.","Temporary note: ⏳ in the create menu; inside the note you can make it permanent.","Biometrics and the recovery phrase for PIN: Settings → Security."]};
+const _vS5=vSet;vSet=function(){if(S.ss=="hint"){const L=(ST().lang||"uk")=="uk"?HINTS.uk:(ST().lang=="sz"?HINTS.uk.map(trs):HINTS.en);return`<div class="bar"><button onclick="S.ss=null;R()">←</button><h2>Підказки</h2></div><ol style="padding-left:20px">${L.map(x=>`<li style="margin:8px 0">${esc(x)}</li>`).join("")}</ol>`}let h=_vS5();if(!S.ss&&ST().hn)h+=`<button class="menu2" onclick="S.ss='hint';R()">💡 Підказки</button>`;if(S.ss=="sec")h+=SECI;if(S.ss=="about")h=h.replace("4.0","5.0");return h};
+// Surzhyk (spoken style)
+const SZT=`Домівка|Домашня
+Налаштування|Настройки
+Усі нотатки|Всє замєтки
+Усі записи|Всє записи
+Нотатки|Замєтки
+Нотатка|Замєтка
+нотаток|замєток
+нотатки|замєтки
+нотатку|замєтку
+Категорії|Катєгорії
+Категорія|Катєгорія
+категорі|катєгорі
+Гілки|Вєтки
+Гілка|Вєтка
+гілок|вєток
+гілку|вєтку
+Кошик|Корзина
+Закріплені|Закрєплонниє
+Створити|Создать
+Створено|Создано
+Швидка нотатка|Бистрая замєтка
+Швидкі нотатки|Бистриє замєтки
+Тимчасова|Врємєнная
+тимчасов|врємєнн
+Скасувати|Отмєна
+Закрити|Закрить
+Видалити|Удалить
+видалено|удалєно
+Відновити|Восстановить
+Редагувати|Рєдактіровать
+Назва|Названиє
+Опис|Описаниє
+Подія|Собитиє
+Події|Собитія
+Нагадування|Напомінаниє
+Мітка|Мєтка
+Вигляд|Вид
+Безпека|Бєзопасность
+Файли|Файли
+Про застосунок|Про пріложеніє
+Системна|Системная
+Світла|Свєтлая
+Темна|Тьомная
+Чорна|Чорная
+Розмір тексту|Размєр тєкста
+Масштаб кнопок|Масштаб кнопок
+Мова|Язик
+Пошук|Поиск
+Скинути стиль|Сбросить стиль
+Введіть PIN|Вводи PIN
+Сповіщення|Уведомлєния
+Небезпечна зона|Опасная зона
+Резервна копія|Рєзєрвная копія
+Порожньо|Пусто
+Нічого не знайдено|Нічо нє найдєно
+Невірно, спробуйте ще раз|Нє так, попробуй єщо раз
+Що сталося|Шо случилось
+Дата і час|Дата і врємя
+Колір|Цвєт
+Пов’язані|Связанниє
+Зробити постійною|Сдєлать постоянной
+Зробити тимчасовою|Сдєлать врємєнной
+Зробити видимою|Сдєлать видимой
+Приховані|Скритиє
+Приховати|Скрить
+Копіювати|Копіровать
+Відкрити|Открить
+Додати|Добавить
+Змінити|Поміняти
+Задати|Задать
+Експорт|Експорт
+Імпорт|Імпорт
+Тиждень|Нєдєля
+Місяць|Мєсяц
+Список|Список
+Сьогодні|Сєгодня
+сьогодні|сєгодня
+Минула|Прошлая
+Запланована|Запланірованная
+Нова|Новая
+Новий|Новий
+Ключова фраза|Ключєвая фраза
+Забули PIN?|Забил PIN?
+Підказки|Подсказки
+Відображення|Отображєниє
+Пошук по всьому застосунку…|Поиск по всьому пріложенію…
+Мій настрій сьогодні…|Мой настрой сєгодня…`.split("\n").map(l=>l.split("|"));
+const SZP=[...SZT,...SZT.filter(a=>a[0]!=a[0].toLowerCase()).map(a=>[a[0].toLowerCase(),a[1].toLowerCase()])].sort((a,b)=>b[0].length-a[0].length);
+const SZW=[["що","шо"],["щоб","штоби"],["який","какой"],["яка","какая"],["або","ілі"],["це","ето"],["вже","уже"],["ще","єщо"],["тільки","только"],["не","нє"],["та","і"],["дуже","очєнь"],["будь ласка","пожалуста"],["так","да"],["ні","нєт"],["немає","нєту"],["тут","тут"],["потім","потом"],["завжди","всєгда"],["тепер","тєпєрь"],["можна","можна"]].map(([a,b])=>[new RegExp("(?<![\\p{L}])"+a+"(?![\\p{L}])","giu"),b]);
+const _trs5=trs;trs=function(d){if((ST().lang||"uk")!="sz")return _trs5(d);if(!d)return d;SZP.forEach(([a,b])=>{if(d.includes(a))d=d.split(a).join(b)});SZW.forEach(([r,b])=>d=d.replace(r,m=>m[0]!=m[0].toLowerCase()?b[0].toUpperCase()+b.slice(1):b));return d};
+PHS.uk.push("Що мене сьогодні здивувало…","Думки перед сном…","Рецепт, який хочу спробувати…","Що сказав клієнт…","Книги й фільми на потім…","Плани на вихідні…","Подарунки для рідних…","Щоденник: як минув день…","Контакти й домовленості…","Що треба полагодити…");
+PHS.sz.length=0;PHS.sz.push("Чєркані шося…","Шо там?..","Мій настрой сєгодня, шось нє очєнь…","Спісок продуктов, ну шо там нада…","Шо мнє нє забить…","Ідея, шо в голову прішла…","Планы на нєдєлю, короч…","За шо я благодарний сєгодня…","Цитата чи мисль дня…","Шо нада купить…","Маршрут чи мєста…","Разговор: о чьом договорилісь…","Шо новоє узнав…","Мєчти і цілі…","Нічо нє забить, нє забить нічо…","Шо сказав клієнт, ну…","Дєла на сєгодня, короч…","Книги і фільми на потом…","Шо там по планах на вихідниє…","Подарки для своїх…");
+PHS.en.push("Aw shit, here we go again…","What surprised me today…","Thoughts before sleep…","A recipe I want to try…","What the client said…","Books and films for later…","Weekend plans…","Gifts for family…","Diary: how the day went…","Things to fix…");
+PHS.hd.length=0;PHS.hd.push("Aw shit, here we go again…","Yo, what's good today?…","Grocery list, don't forget da damn chips…","What da hell I can't forget…","Some crazy idea just hit me…","Plans for da week, fam…","What I'm grateful for, ya heard…","Quote of da day, bro…","Gotta cop this sh*t…","Route and spots to hit…","Convo: what da hell we agreed on…","Learned some new sh*t…","Dreams and goals, dawg…","What da client said, no cap…","Chores to handle, damn…","Movies n books for later…","Weekend plans, homie…","Gifts for da fam…","Diary: how da day went down…","Stuff to fix, goddamn…");
+
+const _t3=`Дата|Дата|Date|Date
+Тема|Тема|Theme|Theme
+Фото|Фото|Photo|Pic
+Текст|Текст|Text|Text
+Фраза|Фраза|Phrase|Phrase
+Пароль|Пароль|Password|Password
+Розмір|Размєр|Size|Size
+Малий|Малєнький|Small|Tiny
+Звичайний|Обичний|Normal|Normal
+Дуже великий|Очєнь большой|Extra large|Huge as hell
+Великий|Большой|Large|Big
+Курсив|Курсив|Italic|Italic
+Жирний|Жирний|Bold|Bold
+Таблиця|Табліца|Table|Table
+Чекліст|Чєклист|Checklist|Checklist
+Лінія|Лінія|Line|Line
+Рядків|Строк|Rows|Rows
+Стовпців|Столбцов|Columns|Columns
+Посилання|Ссилка|Link|Link
+Введіть|Вводи|Enter|Punch in
+Існуючі:|Єсть:|Existing:|Existing:
+Нотатник|Нотатнік|Notebook|Da Notebook
+Загальне|Общеє|General|General
+Інформація|Інформація|Info|Info
+Поділитись|Подєлиться|Share|Share
+Правильний|Правільний|Correct|Right
+Поточний|Тєкущий|Current|Current
+Скидання|Сброс|Reset|Reset
+Підназва|Подназваніє|Subtitle|Subtitle
+Створено:|Создано:|Created:|Made:
+Змінено:|Мєнялось:|Edited:|Messed with:
+створено|создано|created|made
+змінено|мєнялось|edited|messed with
+вимкнено|виключєно|off|off
+увімкнено|включєно|on|on
+Вимкнути|Виключить|Turn off|Kill
+Увімкнути|Включить|Turn on|Fire up
+Копіювати|Копіровать|Copy|Copy
+Підказки|Подсказки|Hints|Cheat sheet
+Задати|Задать|Set|Set
+Змінити|Поміняти|Change|Change
+Куди|Куда|Where to|Where to
+Через 1 хв|Через 1 мін|In 1 min|In 1 min
+Через 5 хв|Через 5 мін|In 5 min|In 5 min
+Через 30 хв|Через 30 мін|In 30 min|In 30 min
+За 5 хв до|За 5 мін до|5 min before|5 min before
+За 15 хв до|За 15 мін до|15 min before|15 min before
+За 1 годину до|За 1 час до|1 hour before|1 hour before
+За 1 день до|За 1 дєнь до|1 day before|1 day before
+1 годину|1 час|1 hour|1 hour
+6 годин|6 часов|6 hours|6 hours
+1 день|1 дєнь|1 day|1 day
+7 днів|7 дней|7 days|7 days
+30 днів|30 дней|30 days|30 days
+Подзвонити|Позвонить|Call|Call
+Додати контакт|Добавить контакт|Add contact|Add contact
+Зняти колір|Снять цвєт|Remove colour|Remove color
+Перемістити в|Пєрємєстить в|Move to|Move to
+Перемістити|Пєрємєстить|Move|Move
+Пароль файлу|Пароль файла|File password|File password
+щоб вимкнути|штоби виключить|to turn off|to kill it
+видаляється…|удаляється…|deleting…|getting torched…
+Дані нотатки|Даниє замєтки|Note data|Scribble data
+Назва / опис|Названиє / описаниє|Name / description|Name / deets
+Колір тексту|Цвєт тєкста|Text colour|Text color
+до видалення:|до удалєнія:|until deletion:|till it's torched:
+Видалити подію|Удалить собитиє|Delete event|Yeet event
+Швидкі нотатки|Бистриє замєтки|Quick notes|Quick scribbles
+Повторіть новий|Повтори новий|Repeat new|Say da new one again
+Фразу збережено|Фразу сохранил|Phrase saved|Phrase saved
+ЧАСОВІ ПОЗНАЧКИ|ВРЄМЄННИЄ ПОМЄТКИ|TIME STAMPS|TIME STAMPS
+за типом зв’язку|по типу связі|by relation type|by relation type
+Адреса або текст|Адрєс ілі тєкст|Address or text|Address or text
+Підказки сховано|Подсказки спрятани|Hints hidden|Hints hidden
+Підказки відкрито|Подсказки открити|Hints unlocked|Hints unlocked
+Свій тип зв’язку|Свой тип связі|Custom relation type|My own relation type
+Копія всіх даних|Копія всєх даних|Copy of all data|Copy of all da sh*t
+мінімум 4 цифри)|мінімум 4 цифри)|at least 4 digits)|at least 4 digits)
+Видалити позначку|Удалить помєтку|Delete stamp|Yeet stamp
+простий документ)|простой документ)|simple document)|simple document)
+Допомагає скинути|Помогає сбросить|Helps reset|Helps reset
+Зв’язків ще немає|Связєй єщо нєту|No relations yet|No relations yet, loner
+Прив’язати нотатку|Прівязать замєтку|Link a note|Link a scribble
+Експорт усіх даних|Експорт всєх даних|Export all data|Ship out all da sh*t
+Рівна (сестринська)|Равная|Sibling|Sibling
+Утримуйте категорію|Держи катєгорію|Hold a category|Hold a hood
+«Дії»|«Дії»|«Actions»|«Moves»
+Пріоритет: картинка|Приорітєт: картинка|Priority: picture|Priority: pic
+Видалити зображення?|Удалить зображеніє?|Delete image?|Yeet da image?
+Перемістити в кошик:|Пєрємєстить в корзину:|Move to trash:|Dumpster it:
+Сповіщення дозволено|Уведомлєнія разрєшени|Notifications allowed|Pings allowed
+Сповіщення заборонено|Уведомлєнія запрєщени|Notifications blocked|Pings blocked
+Сповіщення вже дозволено|Уведомлєнія уже разрєшени|Notifications already allowed|Pings already allowed
+Сповіщення тут не підтримуються|Уведомлєнія тут нє работают|Notifications are not supported here|Pings don't work here
+Усі нотатки видалено|Всє замєтки удалєни|All notes deleted|All scribbles torched
+Невірний формат копії|Нєвірний формат копії|Invalid backup format|Busted backup format
+Лише після перезапуску|Тільки послє пєрєзапуска|Only after restart|Only after restart
+Нотатка тепер постійна|Замєтка тєпєрь постоянная|Note is now permanent|Scribble is permanent now
+Додати тег до вибраних|Добавить тєг к виброннім|Add tag to selected|Slap a tag on da picked ones
+Одразу після згортання|Сразу послє сворачіванія|Right after minimising|Right when I bounce
+Назва (напр. «Клієнт»)|Названиє (напр. «Клієнт»)|Name (e.g. “Client”)|Name (e.g. “Client”)
+Часова позначка (зараз)|Врємєнная помєтка (сєйчас)|Time stamp (now)|Time stamp (right now)
+Приховані гілки сховано|Скритиє вєтки спрятани|Hidden branches hidden|Hidden streets hidden
+Приховані гілки показано|Скритиє вєтки показани|Hidden branches shown|Hidden streets shown
+Приховані нотатки сховано|Скритиє замєтки спрятани|Hidden notes hidden|Hidden scribbles hidden
+Приховані нотатки показано|Скритиє замєтки показани|Hidden notes shown|Hidden scribbles shown
+Приховані категорії сховано|Скритиє катєгорії спрятани|Hidden categories hidden|Hidden hoods hidden
+Приховані категорії показано|Скритиє катєгорії показани|Hidden categories shown|Hidden hoods shown
+Невірний файл або пароль|Нєвірний файл ілі пароль|Invalid file or password|Busted file or password
+порожньо — не змінювати)|пусто — нє мєнять)|empty — keep as is)|empty — keep it)
+Хвилин (для «Через … хв»)|Мінут (для «Через … хв»)|Minutes (for “In … min”)|Minutes (for “In … min”)
+Колір для всіх пов’язаних|Цвєт для всєх связанних|Colour for all linked notes|Color for all linked scribbles
+Файл завеликий (макс. 8 МБ)|Файл слішком большой (макс. 8 МБ)|File too large (max 8 MB)|File too damn big (max 8 MB)
+Файл завеликий (макс. 5 МБ)|Файл слішком большой (макс. 5 МБ)|File too large (max 5 MB)|File too damn big (max 5 MB)
+Видалити безповоротно через|Удалить навсєгда чєрєз|Delete permanently in|Torch for good in
+Швидка нотатка (у «Вхідні»)|Бистрая замєтка (в «Вхідниє»)|Quick note (into “Inbox”)|Quick scribble (into “Inbox”)
+Працює через захист пристрою|Работає чєрєз защиту устройства|Works through device protection|Works through yo phone's protection
+лишається запасним способом.|остаєтся запасним способом.|stays as the backup.|stays as da backup.
+Фраза має бути 4–16 символів|Фраза должна буть 4–16 символів|Phrase must be 4–16 characters|Phrase gotta be 4–16 characters
+Перемістити нотатку в кошик?|Пєрємєстить замєтку в корзину?|Move note to trash?|Dumpster this scribble?
+Назва (емодзі підтримуються)|Названиє (емодзі підтримуються)|Name (emoji supported)|Name (emoji work, bro)
+Ключова фраза (4–16 символів)|Ключєвая фраза (4–16 символів)|Recovery phrase (4–16 characters)|Secret phrase (4–16 characters)
+стандартний 0000, змініть його)|стандартний 0000, поміняй єго)|default 0000, change it)|default 0000, change it, genius)
+Копія нотаток (без налаштувань)|Копія замєток (бєз настроєк)|Copy of notes (no settings)|Copy of scribbles (no settings)
+Кошик не очищується автоматично.|Корзина сама нє чістится.|Trash is not emptied automatically.|Dumpster don't empty itself.
+Розблокування відбитком увімкнено|Развєрка пальцем включєна|Fingerprint unlock enabled|Thumbprint unlock fired up
+Обрана нотатка для поточної — це:|Виброннаяя замєтка для тєкущой — ето:|The chosen note, for the current one, is:|Da picked scribble is, for this one:
+Біометрія недоступна або скасована|Біометрія нєдоступна ілі отмєнєна|Biometrics unavailable or cancelled|Thumbprint ain't working or you bailed
+Нагадування (лише для запланованої)|Напомінаниє (тільки для запланірованной)|Reminder (planned events only)|Reminder (planned only)
+відкриває застосунок сам, без кнопки.|открива пріложеніє сам, бєз кнопки.|opens the app by itself, no button.|opens da app by itself, no button.
+Перемістити в кошик разом із вмістом?|Пєрємєстить в корзину вмєстє з содєржимим?|Move to trash with its contents?|Dumpster it with everything inside?
+Відкрито «Приховані категорії» під кошиком|Открито «Скритиє катєгорії» под корзиной|“Hidden categories” unlocked under Trash|“Hidden hoods” unlocked under da Dumpster
+Якщо є і картинка, і емодзі — показується картинка.|Єсли єсть і картинка, і емодзі — показується картинка.|If both a picture and an emoji are set, the picture is shown.|If you got both pic and emoji, pic wins.
+Пароль для шифрування файлу (порожньо — без шифрування)|Пароль для шифрованія файла (пусто — бєз шифрованія)|Password to encrypt the file (empty — no encryption)|Password to lock da file (empty — no lock)
+Зворотна назва (напр. «Замовлення»); порожньо — така сама|Обратноє названиє (напр. «Заказ»); пусто — такоє же|Reverse name (e.g. “Order”); empty — same|Reverse name (e.g. “Order”); empty — same
+Нотатки видаляються назавжди, категорії та гілки залишаються.|Замєтки удаляються навсєгда, катєгорії і вєтки остаються.|Notes are deleted forever; categories and branches stay.|Scribbles get torched for good; hoods and streets stay.
+Вставте раніше скопійований текст копії. Поточні дані буде замінено.|Вставь раньшє скопірованний тєкст копії. Тєкущиє даниє будут замєнєни.|Paste the previously copied backup text. Current data will be replaced.|Paste da backup text. Current sh*t will be replaced.
+Нагадування спрацьовують, поки застосунок відкрито або працює у фоні.|Напомінанія срабативают, пока пріложеніє открито ілі работає в фонє.|Reminders fire while the app is open or running in the background.|Reminders pop off while da app is open or running in da background.
+Видалити ВСІ нотатки назавжди (разом із кошиком)? Скасувати не можна.|Удалить ВСЄ замєтки навсєгда (вмєстє с корзиной)? Отмєнить нєльзя.|Delete ALL notes forever (including the trash)? This cannot be undone.|Torch ALL scribbles for good (dumpster too)? No takebacks.
+Регулярно копіюйте дані в безпечне місце: якщо очистити дані браузера, вони зникнуть.|Рєгулярно копіруй даниє в бєзопасноє мєсто: єсли очістить даниє браузєра, вони пропадут.|Back up regularly to a safe place: if you clear browser data, it will be gone.|Back that sh*t up somewhere safe: clear browser data and it's gone.
+Лише нотатки» — без налаштувань вигляду та безпеки. Імпорт зберігає ваші поточні налаштування, якщо їх немає в копії.|Тільки замєтки» — бєз настроєк вида і бєзопасності. Імпорт сохраняєт ваші тєкущиє настройки, єсли їх нєту в копії.|Notes only» skips look and security settings. Import keeps your current settings if the backup has none.|Notes only» skips swag and lockdown settings. Import keeps yo current settings if the backup has none.
+емодзі (показується одне з двох); колір — тонка смужка зліва; мітка — біля назви нотатки.|емодзі (показується одно із двох); цвєт — тонкая полоска слєва; мєтка — возлє названія замєтки.|emoji (only one of the two is shown); colour is a thin stripe on the left; the label sits next to the note title.|emoji (only one shows); color is a thin stripe on da left; da tag sits by da scribble title.
+якщо забули (на екрані блокування — «|єсли забил (на екранє блокіровки — «|if you forgot (on the lock screen — «|if you forgot (on da lock screen — «
+Картинка (по центру обрізається до квадрата|Картинка (по цєнтру обрєзаєтся до квадрата|Picture (cropped to a square around the centre|Pic (cropped to a square around da center
+Ходи сюди|Ходи сюда|Come here|Come here`.split("\n").map(l=>l.split("|"));_t3.forEach(r=>{if(!TR.some(t=>t[0]==r[0]))TR.push([r[0],r[2],r[3]]);if(!SZP.some(t=>t[0]==r[0]))SZP.push([r[0],r[1]])});SZP.sort((a,b)=>b[0].length-a[0].length);TR.sort((a,b)=>b[0].length-a[0].length);
+const SECE=`<h3>How your data is protected</h3><ul class="mut" style="padding-left:18px"><li>Notes are stored only on this device. The app sends nothing to the internet.</li><li>The database in device storage is encrypted (AES-256-GCM). The key is created on the device and cannot be extracted.</li><li>The app cache holds only code and icons, never your texts.</li><li>The PIN and recovery phrase are stored inside the encrypted database.</li><li>Backup files can be password-protected (PBKDF2 + AES-256-GCM). Without the password they cannot be opened.</li><li>If you clear browser data or uninstall the app, your notes are gone. Make backups.</li></ul>`;
+const _vS6=vSet;vSet=function(){let h=_vS6();if(S.ss=="sec"){const L=ST().lang||"uk",i=h.indexOf("<h3>Як захищені");if(i>=0&&L!="uk")h=h.slice(0,i)+(L=="sz"?trs(SECI):SECE)}return h};
 // ---------- reminders (while app is open) ----------
 setInterval(chkRem,15000);
 (async()=>{const d=await load();if(d&&d.cats)DB=d;DB.tags=DB.tags||[];inbox();applyStyle();flush();sweep();if(DB.pinOn)lockNow();R();chkRem()})();
