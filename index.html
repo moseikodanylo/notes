@@ -1087,4 +1087,181 @@ _t4.forEach(r=>{if(!TR.some(t=>t[0]==r[0]))TR.push([r[0],r[2],r[3]]);if(!SZP.som
 setInterval(chkRem,15000);
 (async()=>{const d=await load();if(d&&d.cats)DB=d;DB.tags=DB.tags||[];inbox();applyStyle();flush();sweep();if(DB.pinOn)lockNow();R();chkRem()})();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+// ======== v7 patch ========
+// 2. Тости: закриваються свайпом у будь-який бік, тапом або ✕
+(function(){const e=$("#tst");let tid,sx,sy;
+window.toast=function(t){clearTimeout(tid);e.style.transition="";e.style.transform="";e.style.opacity=1;e.innerHTML='<span style="flex:1">'+esc(t)+'</span><b style="padding:0 6px;opacity:.8">✕</b>';e.style.display="flex";e.style.alignItems="center";tid=setTimeout(()=>e.style.display="none",9000)};
+e.style.touchAction="none";e.removeAttribute("onclick");
+e.addEventListener("pointerdown",ev=>{sx=ev.clientX;sy=ev.clientY;e.style.transition="";try{e.setPointerCapture(ev.pointerId)}catch(_){}});
+e.addEventListener("pointermove",ev=>{if(sx==null)return;const dx=ev.clientX-sx,dy=ev.clientY-sy;e.style.transform=`translate(${dx}px,${dy}px)`;e.style.opacity=Math.max(.2,1-Math.hypot(dx,dy)/200)});
+e.addEventListener("pointerup",ev=>{if(sx==null)return;const dx=ev.clientX-sx,dy=ev.clientY-sy;sx=null;
+ if(Math.hypot(dx,dy)>50||Math.hypot(dx,dy)<6){clearTimeout(tid);e.style.transition="transform .15s,opacity .15s";e.style.transform=`translate(${dx*3}px,${dy*3}px)`;e.style.opacity=0;setTimeout(()=>{e.style.display="none";e.style.transition="";e.style.transform="";e.style.opacity=1},150)}
+ else{e.style.transition="transform .15s";e.style.transform="";e.style.opacity=1}});
+e.addEventListener("pointercancel",()=>{sx=null;e.style.transform="";e.style.opacity=1})})();
+
+// 3. Опис застосунку
+(function(){const p=vSet;vSet=function(){if(S.ss=="about")return`<div class="bar"><button onclick="S.ss=null;R()">←</button><h2>Про застосунок</h2></div><p><b>Нотатник</b> · версія 8.0</p><p>Нотатник із широким інструментарієм: категорії → гілки → нотатки, експорт нотаток, гілок і категорій у різних форматах, код у нотатках різними мовами з підсвічуванням, зв’язки між нотатками у вигляді дерева, календар подій та нагадувань про події, надійний захист (PIN, біометрія, ключова фраза), кастомізація вигляду, теги, кольори й картинки, кілька мов інтерфейсу. Працює без інтернету, усі дані зберігаються на вашому пристрої.</p><p>Автор: <a href="https://github.com/moseikodanylo" target="_blank" rel="noopener">github.com/moseikodanylo</a></p>`;return p()}})();
+
+// 22. Кнопка «Назад» телефона повертає на попередню вкладку, а не закриває застосунок
+(function(){try{history.replaceState({nb:0},"");history.pushState({nb:1},"")}catch(e){return}
+addEventListener("popstate",()=>{try{history.pushState({nb:1},"")}catch(e){}
+ const m=$("#m");if(m&&m.style.display=="flex"){cl();return}
+ const lk=$("#lk");if(lk&&lk.style.display&&lk.style.display!="none")return;
+ if(typeof SEL!="undefined"&&SEL){SEL=null;R();return}
+ if(S.ss){S.ss=null;R();return}
+ if(stack.length){back();return}
+ if(S.v!="home")tab("home")})})();
+
+// 4–6. Кошик: окреме відновлення, колір/вигляд, очищення всього
+function trSub(t,x){if(t=="notes"){const b=G("brs",x.br);return b&&b.del?"у видаленій гілці «"+b.name+"»":""}if(t=="brs"){const c=G("cats",x.cat);return c&&c.del?"у видаленій категорії «"+c.name+"»":""}return""}
+function restore1(t,id){const x=G(t,id);if(!x)return;
+ if(t=="notes"){const b=G("brs",x.br);if(!b||b.del)x.br=inbox()}
+ if(t=="brs"){const c=G("cats",x.cat);if(!c||c.del)x.cat=G("brs",inbox()).cat}
+ const un=a=>{if(a.via==id){delete a.del;delete a.via}};delete x.del;delete x.via;
+ if(t=="cats"){DB.brs.forEach(un);DB.notes.forEach(un)}if(t=="brs")DB.notes.forEach(un);
+ // діти, що лишились у кошику, але чий батько відновлений, більше не «вкладені»
+ save()}
+function emptyTrashAsk(){ask("Очистити кошик назавжди? Це не можна скасувати.",[],()=>{DB.cats=DB.cats.filter(x=>!x.del);DB.brs=DB.brs.filter(x=>!x.del);DB.notes=DB.notes.filter(x=>!x.del);save();R();toast("Кошик очищено")})}
+vTrash=function(){const L=[];[["cats","📁"],["brs","🌿"],["notes","📝"]].forEach(([t,i])=>DB[t].filter(x=>x.del).forEach(x=>{const s=trSub(t,x),tg=(x.tags||[]).map(y=>"#"+esc(y)).join(" ");
+ L.push(`<div class="row" ${cs(x)}><b>${ic0(x)} ${i} ${esc(x.name||"Без назви")}${x.col?` <span style="color:${x.col}">●</span>`:""}</b><small>видалено ${fdt(x.del)}${s?" · "+esc(s):""}${tg?" · "+tg:""}${t=="notes"&&x.type=="code"?" · </>":""}</small><div class="bt" style="justify-content:flex-start;margin-top:6px"><button onclick="restore1('${t}','${x.id}');R()">Відновити</button><button onclick="purgeAsk('${t}','${x.id}')">Назавжди</button></div></div>`)}));
+ return bar("Кошик")+'<p class="mut">Кошик не очищується автоматично. Окрему нотатку чи гілку можна відновити без батьків — вона потрапить у «Вхідні».</p>'+(L.length?'<div class="bt" style="justify-content:flex-start"><button onclick="emptyTrashAsk()">🗑 Очистити кошик назавжди</button></div>':"")+(L.join("")||"<p class='mut'>Порожньо</p>")};
+// «Назавжди» для батька: прибираємо лише вкладених, що мають via
+// 19. Інформація та підрахунок слів/символів
+function stats(n){const t=n.type=="code"?(plain0(n.html)):plain(n.html||"");const w=(t.trim().match(/\S+/g)||[]).length;return{ch:t.length,chs:t.replace(/\s/g,"").length,w,l:t?t.split("\n").length:0}}
+function plain0(h){return plain(h)}
+function infoBox(extra){return extra}
+infoEd=function(){const n=cur(),s=stats(n),b=brOf(n),c=catOf(b);
+ ask("Інформація",[["Назва",n.name],["Підназва",n.sub||""]],v=>{n.name=v[0];n.sub=v[1];n.br=$("#pb").value;n.edited=now();save();R()},
+ `<label>Гілка</label><select id="pb">${brOpts(n.br)}</select><p class="mut" style="font-size:13px">Слів: <b>${s.w}</b> · Символів: <b>${s.ch}</b> (без пробілів: ${s.chs}) · Рядків: ${s.l}<br>Категорія: ${esc(c&&c.name)} › ${esc(b&&b.name)}<br>Створено: ${fdt(n.created)}<br>Змінено: ${fdt(n.edited)}${n.tags&&n.tags.length?"<br>Теги: "+n.tags.map(x=>"#"+esc(x)).join(" "):""}${n.type=="code"?"<br>Мова коду: "+esc(n.lang):""}</p>`)};
+function infoCB(t,id){const x=G(t,id);let h=`<h3>${esc(x.name)}</h3><p class="mut" style="font-size:14px">`;
+ if(t=="cats"){const B=DB.brs.filter(y=>y.cat==id&&!y.del),N=DB.notes.filter(y=>!y.del&&B.some(z=>z.id==y.br));h+=`Гілок: <b>${B.length}</b> · Нотаток: <b>${N.length}</b><br>Слів у нотатках: <b>${N.reduce((a,y)=>a+stats(y).w,0)}</b>`}
+ else{const N=DB.notes.filter(y=>!y.del&&y.br==id);h+=`Нотаток: <b>${N.length}</b><br>Слів у нотатках: <b>${N.reduce((a,y)=>a+stats(y).w,0)}</b>`}
+ h+=`<br>Створено: ${fdt(x.created)}<br>Змінено: ${fdt(x.edited)}${x.desc?"<br>Опис: "+esc(x.desc):""}${x.col?`<br>Колір: <span style="color:${x.col}">● ${esc(x.col)}</span>`:""}</p><div class="bt"><button class="pri" onclick="cl()">Закрити</button></div>`;show(h)}
+
+// 1. Експорт цілої гілки/категорії (один файл: Markdown, TXT або JSON)
+function treeNotes(t,id){const B=t=="cats"?DB.brs.filter(y=>y.cat==id&&!y.del):[G("brs",id)];return B.flatMap(b=>DB.notes.filter(n=>!n.del&&n.br==b.id).map(n=>[b,n]))}
+function expTree(t,id,fmt){const x=G(t,id),c0=t=="cats"?x:G("cats",x.cat),L=treeNotes(t,id),f=(x.name||"export").replace(/[^\p{L}\p{N}]+/gu,"_");
+ if(fmt=="json"){const o={name:x.name,type:t=="cats"?"category":"branch",exported:new Date().toISOString(),branches:[...new Set(L.map(([b])=>b.id))].map(i=>{const b=G("brs",i);return{name:b.name,desc:b.desc||"",notes:L.filter(([bb])=>bb.id==i).map(([,n])=>{const q=Object.assign({},n);delete q.id;delete q.br;return q})}})};dl(f+".json",JSON.stringify(o,null,1),"application/json")}
+ else{let s="";const md=fmt=="md";if(t=="cats")s+=(md?"# ":"")+x.name+"\n\n";let last;L.forEach(([b,n])=>{if(b.id!=last){last=b.id;s+=(md?(t=="cats"?"## ":"# "):"== ")+b.name+(md?"":" ==")+"\n\n"}s+=(md?(t=="cats"?"### ":"## "):"-- ")+(n.name||"Без назви")+"\n\n"+(n.type=="code"?(md?"```"+(n.lang||"")+"\n"+plain(n.html)+"\n```":plain(n.html)):toTxt(n))+"\n\n"});dl(f+(md?".md":".txt"),s,"text/plain")}
+ toast("Файл збережено ("+L.length+" нотаток)")}
+function expTreeMenu(t,id){const b=(f,l)=>`<button class="menu" onclick="expTree('${t}','${id}','${f}')">${l}</button>`;show(`<h3>Експорт ${t=="cats"?"категорії":"гілки"}</h3>`+b("md","Markdown (.md) — один файл")+b("txt","Текст (.txt) — один файл")+b("json","JSON (для імпорту/аналізу)")+'<div class="bt"><button onclick="cl()">Закрити</button></div>')}
+(function(){const p=cbMenu;cbMenu=function(t,id){p(t,id);const bx=$("#m .box");if(!bx)return;const bt=bx.querySelector(".bt"),h=`<button class="menu" onclick="expTreeMenu('${t}','${id}')">📤 Експортувати з усім вмістом</button><button class="menu" onclick="infoCB('${t}','${id}')">ℹ️ Інформація</button>`;bt?bt.insertAdjacentHTML("beforebegin",h):bx.insertAdjacentHTML("beforeend",h)}})();
+
+
+// ======== v8 patch ========
+// ---- 8/9. Рука мерця + очищення ключової фрази ----
+function dmPut(v){return new Promise(r=>{try{const q=H.transaction("k","readwrite").objectStore("k").put(v,"dmfile");q.onsuccess=()=>r(1);q.onerror=()=>r(0)}catch(e){r(0)}})}
+function dmGet(){return new Promise(r=>{try{const q=H.transaction("k").objectStore("k").get("dmfile");q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(e){r(null)}})}
+function dmDel(){try{H.transaction("k","readwrite").objectStore("k").delete("dmfile")}catch(e){}}
+async function dmCheck(){const d=DB.dm;if(!d||!d.on||!d.k||now()-d.last<d.days*864e5)return;
+ try{const s=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),c=JSON.parse(JSON.stringify(DB));delete c.dm;
+ const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},await pbk(d.k,s),U8(JSON.stringify(c)));
+ if(!await dmPut(JSON.stringify({enc:1,s:b64b(s),iv:b64b(iv),ct:b64b(ct)})))return;
+ const keep={};["pin","pinOn","bio","st","lockAfter","priv","pal","phr"].forEach(k=>{if(DB[k]!==undefined)keep[k]=DB[k]});
+ DB=Object.assign({cats:[],brs:[],notes:[],tags:[],dm:{on:0,days:d.days,last:now()}},keep);inbox();flush();R()}catch(e){}}
+async function dmPending(){if(window.dmShown||(($("#lk").style.display||"none")!="none"&&$("#lk").style.display!=""))return;const f=await dmGet();if(!f)return;window.dmShown=1;
+ show('<h3>☠️ Рука мерця спрацювала</h3><p class="mut">Нотатник довго не відкривали, тому дані видалено з застосунку. Збережіть зашифрований файл — для відновлення потрібна сід-фраза (Налаштування → Файли → Імпорт).</p><div class="bt"><button class="pri" onclick="dmSave()">Зберегти файл</button></div>')}
+async function dmSave(){const f=await dmGet();if(f){dl("notebook-deadhand-"+ymd(new Date())+"-enc.json",f,"application/json");$("#m").querySelector(".box").insertAdjacentHTML("beforeend",'<p class="mut">Файл збережено? <button onclick="dmDel();cl();toast(\'Копію з пристрою прибрано\')">Так, прибрати копію</button></p>')}}
+function dmSet(){const d=DB.dm||{};ask("Рука мерця",[["Сід-фраза (пароль шифрування, мін. 8 символів)",d.k||"","password"],["Період без розблокування, днів",d.days||30,"number"]],v=>{if(!v[0]||v[0].length<8||!(+v[1]>0))return toast("Фраза від 8 символів і період > 0");DB.dm={on:1,k:v[0],days:Math.floor(+v[1]),last:now()};save();R();toast("Рука мерця увімкнена")})}
+function dmOff(){ask("Вимкнути «Руку мерця»?",[],()=>{DB.dm={on:0,days:(DB.dm||{}).days||30,last:now()};save();R()})}
+function phrClr(){ask("Очистити ключову фразу?",[],()=>{delete DB.phr;save();R();toast("Ключову фразу очищено")})}
+new MutationObserver(()=>{if($("#lk").style.display=="none"){if(DB.dm&&DB.dm.on){DB.dm.last=now();save()}dmPending()}}).observe($("#lk"),{attributes:true,attributeFilter:["style"]});
+(function(){const p=vSet;vSet=function(){const h=p();if(S.ss!="sec")return h;const d=DB.dm||{};
+ return h+'<h3>☠️ Рука мерця</h3><p class="mut">'+(d.on?"Увімкнена: якщо не розблокувати "+d.days+" дн., усі дані експортуються зашифровані сід-фразою й видаляються з застосунку. ":"Вимкнена. ")+'Сід-фраза зберігається на пристрої до спрацювання, тож це захист файлу, а не пристрою.</p><div class="tb"><button onclick="dmSet()">'+(d.on?"Змінити":"Увімкнути")+'</button>'+(d.on?'<button onclick="dmOff()">Вимкнути</button>':"")+'</div>'+(DB.phr?'<h3>Ключова фраза</h3><div class="tb"><button onclick="phrClr()">🧹 Очистити ключову фразу</button></div>':"")}})();
+setTimeout(()=>{dmCheck();dmPending()},1200);setInterval(dmCheck,6e4);
+
+// ---- 13. Запуск коду (JS / HTML) ----
+addEventListener("message",e=>{const o=$("#ko");if(!o||!e.data||!e.data.nb)return;const d=document.createElement("div");d.style.color=e.data.t=="err"?"#d33":e.data.t=="done"?"var(--mut)":"inherit";d.textContent=e.data.m;o.appendChild(d)});
+function kdRun(){const n=cur(),c=KT?KT.value:"";
+ if(n.lang=="html"){show('<h3>▶ Результат</h3><iframe sandbox="allow-scripts" srcdoc="'+esc(c)+'" style="width:100%;height:55vh;border:1px solid var(--ln);background:#fff"></iframe><div class="bt"><button onclick="cl()">Закрити</button></div>');return}
+ if(n.lang!="js"){toast("Запуск підтримується для JavaScript і HTML");return}
+ const pre='<'+'script>const P=(t,a)=>parent.postMessage({nb:1,t,m:a.map(x=>{try{return typeof x=="object"?JSON.stringify(x):String(x)}catch(e){return String(x)}}).join(" ")},"*");console.log=(...a)=>P("log",a);console.info=console.log;console.warn=(...a)=>P("err",a);console.error=(...a)=>P("err",a);onerror=(m,u,l)=>{P("err",[m+" (рядок "+(l-1)+")"]);return true};onunhandledrejection=e=>P("err",["Promise: "+e.reason]);<\/script><'+'script>\n';
+ show('<h3>▶ Виконання</h3><pre id="ko" style="white-space:pre-wrap;min-height:80px;max-height:50vh;overflow:auto;background:var(--bg);padding:8px;border-radius:8px"></pre><iframe sandbox="allow-scripts" style="display:none" srcdoc="'+esc(pre+c+'\n<\/script><'+'script>P("done",["✔ Завершено"])<\/script>')+'"></iframe><div class="bt"><button onclick="cl()">Закрити</button></div>')}
+
+// ---- 12. Шаблони коду ----
+let TP={s:0,e:0};
+function tplMenu(){if(KT)TP={s:KT.selectionStart,e:KT.selectionEnd};tplR()}
+function tplR(){const T=DB.tpl=DB.tpl||[];show('<h3>📑 Шаблони</h3><div class="bt" style="justify-content:flex-start"><button class="pri" onclick="tplSave()">➕ З виділеного</button></div>'+(T.map(t=>'<div class="row"><b>'+esc(t.name)+(t.tag?' <small>#'+esc(t.tag)+'</small>':"")+'</b><small>'+esc(t.desc||"")+'</small><pre style="max-height:70px;overflow:hidden;font-size:12px;margin:4px 0">'+esc(t.code.slice(0,200))+'</pre><div class="bt" style="justify-content:flex-start"><button onclick="tplIns(\''+t.id+'\')">Вставити</button><button onclick="tplEd(\''+t.id+'\')">✎</button><button onclick="tplDel(\''+t.id+'\')">🗑</button></div></div>').join("")||'<p class="mut">Шаблонів ще немає. Виділіть код у нотатці й натисніть «З виділеного».</p>')+'<div class="bt"><button onclick="cl()">Закрити</button></div>')}
+function tplSave(){const c=KT?KT.value.slice(TP.s,TP.e):"";if(!c.trim()){toast("Спершу виділіть фрагмент коду");return}ask("Новий шаблон",[["Ім’я",""],["Тег",""],["Опис",""]],v=>{(DB.tpl=DB.tpl||[]).push({id:uid(),name:v[0]||"Шаблон",tag:v[1],desc:v[2],code:c});save();tplR()})}
+function tplEd(id){const t=DB.tpl.find(x=>x.id==id);ask("Редагувати шаблон",[["Ім’я",t.name],["Тег",t.tag||""],["Опис",t.desc||""],["Код",t.code,"area"]],v=>{Object.assign(t,{name:v[0],tag:v[1],desc:v[2],code:v[3]});save();tplR()})}
+function tplDel(id){ask("Видалити шаблон?",[],()=>{DB.tpl=DB.tpl.filter(x=>x.id!=id);save();tplR()})}
+function tplIns(id){const t=DB.tpl.find(x=>x.id==id);cl();if(KT){KT.focus();kdRep(TP.s,TP.s,t.code)}}
+(function(){const p=kdCtl;kdCtl=function(n){const h=p(n),i=h.lastIndexOf("</div>");return h.slice(0,i)+'<button onclick="kdRun()">▶ Запуск</button><button onclick="tplMenu()">📑 Шаблони</button>'+h.slice(i)}})();
+
+// ---- 14/16. Markdown-скорочення та [[крос-посилання]] у звичайних нотатках ----
+function mdIn(ev){if(ev.inputType!="insertText"||!ev.data)return;const s=getSelection();if(!s.rangeCount||!s.isCollapsed)return;const nd=s.anchorNode;if(nd.nodeType!=3)return;const off=s.anchorOffset,tx=nd.data.slice(0,off).replace(/\u00a0/g," ");
+ if(ev.data==" "&&!nd.previousSibling){const m=tx.match(/^(#{1,3}|[-*]|1\.|>)\s$/);if(m){nd.data=nd.data.slice(off);s.collapse(nd,0);const k=m[1];if(k[0]=="#")document.execCommand("formatBlock",false,"h"+k.length);else if(k=="-"||k=="*")document.execCommand("insertUnorderedList");else if(k=="1.")document.execCommand("insertOrderedList");else document.execCommand("formatBlock",false,"blockquote");return}}
+ const sel=(len,h)=>{const r=document.createRange();r.setStart(nd,off-len);r.setEnd(nd,off);s.removeAllRanges();s.addRange(r);document.execCommand("insertHTML",false,h)};
+ if(ev.data=="]"){const m=tx.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]$/);if(m){const w=m[1].trim(),tg=(m[2]||"").trim();if(/^https?:\/\//.test(tg))return sel(m[0].length,'<a href="'+esc(tg)+'">'+esc(w)+'</a>&#8203;');const t=notes().find(x=>(x.name||"").toLowerCase()==(tg||w).toLowerCase());if(t)sel(m[0].length,'<a href="#" data-nl="'+t.id+'">'+esc(w)+'</a>&#8203;');else toast("Нотатку «"+(tg||w)+"» не знайдено");return}}
+ if("*`".includes(ev.data)){let m;if(m=tx.match(/\*\*([^*\n]+)\*\*$/))sel(m[0].length,"<b>"+esc(m[1])+"</b>&#8203;");else if(m=tx.match(/(?<!\*)\*([^*\n]+)\*$/))sel(m[0].length,"<i>"+esc(m[1])+"</i>&#8203;");else if(m=tx.match(/`([^`\n]+)`$/))sel(m[0].length,"<code>"+esc(m[1])+"</code>&#8203;")}}
+(function(){const p=bindNote;bindNote=function(){p();const n=cur();if(n&&n.type!="code"&&ED){ED.addEventListener("input",mdIn);ED.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("[data-nl]");if(a){e.preventDefault();const t=G("notes",a.dataset.nl);if(t&&!t.del){flush();nav("note",t.id)}else toast("Нотатку видалено")}})}}})();
+
+// ---- 17. Диктування ----
+(function(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=document.createElement("button");b.id="mic";b.textContent="🎤";b.style.cssText="position:fixed;left:12px;bottom:80px;z-index:20;display:none;width:46px;height:46px;border-radius:50%;border:none;background:var(--ac);color:#fff;font-size:20px";document.body.appendChild(b);let r,on=0;
+b.onclick=()=>{if(!SR)return toast("Диктування не підтримується цим браузером");if(on){r.stop();return}r=new SR();r.lang=({uk:"uk-UA",sz:"uk-UA",en:"en-US",hd:"en-US"})[ST().lang||"uk"]||"uk-UA";r.continuous=true;r.interimResults=false;
+ r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal){const t=e.results[i][0].transcript.trim()+" ";if(cur().type=="code"&&KT)kdRep(KT.selectionStart,KT.selectionEnd,t);else{ED.focus();document.execCommand("insertText",false,t)}}};
+ r.onend=()=>{on=0;b.style.background="var(--ac)"};r.onerror=e=>toast("Диктування: "+e.error+(e.error=="network"?" (потрібен інтернет)":""));on=1;b.style.background="#d33";r.start()};
+const R0=R;R=function(){if(S.v=="tree"){SEL=null;$("#main").innerHTML=vTree();$("#n1").className="on";$("#n2").className="";$("#fab").style.display="none";$("#fab2").style.display="none";bindTree();b.style.display="none";return}R0();b.style.display=S.v=="note"?"block":"none"}})();
+
+// ---- 18. Фільтри ----
+let FL={tag:"",col:"",type:"",cat:""};
+function flt(){const N=notes(),tg=[...new Set(N.flatMap(n=>n.tags||[]))],cl_=[...new Set(N.map(n=>n.col).filter(Boolean))],o=(a,v,f)=>a.map(x=>'<option value="'+esc(x[0])+'" '+(x[0]==v?"selected":"")+'>'+esc(x[1])+'</option>').join("");
+ const r=N.filter(n=>(!FL.tag||(n.tags||[]).includes(FL.tag))&&(!FL.col||n.col==FL.col)&&(!FL.type||(FL.type=="code"?n.type=="code":FL.type=="pin"?n.pinned:n.type!="code"))&&(!FL.cat||(brOf(n)||{}).cat==FL.cat));
+ const sl=(k,l,a)=>'<label>'+l+'</label><select onchange="FL.'+k+'=this.value;flt()"><option value="">Усі</option>'+o(a,FL[k])+'</select>';
+ show('<h3>🔎 Фільтри</h3>'+sl("tag","Тег",tg.map(x=>[x,"#"+x]))+sl("col","Колір",cl_.map(x=>[x,"● "+x]))+sl("type","Тип",[["text","Звичайні"],["code","Код"],["pin","Закріплені"]])+sl("cat","Категорія",cats().map(c=>[c.id,c.name]))+'<p class="mut">Знайдено: '+r.length+'</p>'+r.slice(0,60).map(n=>'<div class="row" '+cs(n)+' onclick="cl();nav(\'note\',\''+n.id+'\')"><b>'+ic(n)+esc(n.name||"Без назви")+'</b></div>').join("")+'<div class="bt"><button onclick="FL={tag:\'\',col:\'\',type:\'\',cat:\'\'};flt()">Скинути</button><button class="pri" onclick="cl()">Закрити</button></div>')}
+
+// ---- 11. Древо / граф зв’язків ----
+let VB=null,TFS=null;
+const tvO=()=>DB.tv=Object.assign({lay:"tree",em:1,img:1,ti:1,sub:0,tg:0,col:"",ref:1,str:1,kc:1,kb:1,kn:1},DB.tv||{});
+function tvG(){const o=tvO(),N=[],E=[],ix={};
+ const add=(t,x,l)=>{if(!o["k"+t[0]]||(o.col&&x.col!=o.col))return;const n={id:t+":"+x.id,t,x,l,r:[18,14,10][l]};N.push(n);ix[n.id]=n};
+ cats().forEach(x=>add("cats",x,0));brs().forEach(x=>add("brs",x,1));notes().forEach(x=>add("notes",x,2));
+ N.forEach(n=>{if(o.str){const p=n.t=="brs"?"cats:"+n.x.cat:n.t=="notes"?"brs:"+n.x.br:0;if(p&&ix[p])E.push([p,n.id,0])}
+  if(o.ref&&n.t=="notes"){const m=(n.x.html||"").match(/data-nl="[^"]+"/g)||[];new Set(m.map(z=>z.slice(9,-1))).forEach(i=>{const k="notes:"+i;if(ix[k]&&k!=n.id)E.push([n.id,k,1])})}});
+ let V=N;if(TFS&&ix[TFS]){const k=new Set([TFS]);E.forEach(e=>{if(e[0]==TFS)k.add(e[1]);if(e[1]==TFS)k.add(e[0])});V=N.filter(n=>k.has(n.id))}
+ const vs=new Set(V.map(n=>n.id));return{N:V,E:E.filter(e=>vs.has(e[0])&&vs.has(e[1])),ix}}
+function tvLay(N,E,lay){const L=[[],[],[]];N.forEach(n=>L[n.l].push(n));
+ if(lay=="tree")L.forEach((a,l)=>a.forEach((n,i)=>{n.px=(i-(a.length-1)/2)*84;n.py=l*140}));
+ else if(lay=="radial")L.forEach((a,l)=>a.forEach((n,i)=>{const R_=[0,130,260][l]+(l==0&&a.length>1?90:0),g=Math.PI*2*i/Math.max(1,a.length);n.px=Math.cos(g)*R_;n.py=Math.sin(g)*R_}));
+ else{let sd=7;const rn=()=>(sd=(sd*9301+49297)%233280)/233280;N.forEach(n=>{n.px=(rn()-.5)*400;n.py=(rn()-.5)*400;n.vx=0;n.vy=0});const ix={};N.forEach(n=>ix[n.id]=n);
+  for(let it=0;it<140;it++){for(let i=0;i<N.length;i++)for(let j=i+1;j<N.length;j++){const a=N[i],b=N[j];let dx=a.px-b.px,dy=a.py-b.py,d=Math.hypot(dx,dy)||1;if(d<260){const f=1800/(d*d);a.vx+=dx/d*f;a.vy+=dy/d*f;b.vx-=dx/d*f;b.vy-=dy/d*f}}
+   E.forEach(e=>{const a=ix[e[0]],b=ix[e[1]],dx=b.px-a.px,dy=b.py-a.py,d=Math.hypot(dx,dy)||1,f=(d-90)*.02;a.vx+=dx/d*f;a.vy+=dy/d*f;b.vx-=dx/d*f;b.vy-=dy/d*f});
+   N.forEach(n=>{n.vx-=n.px*.004;n.vy-=n.py*.004;n.px+=n.vx*.85;n.py+=n.vy*.85;n.vx*=.6;n.vy*=.6})}}}
+function vTree(){const o=tvO(),g=tvG();tvLay(g.N,g.E,o.lay);const ix=g.ix;
+ if(!VB&&g.N.length){const xs=g.N.map(n=>n.px),ys=g.N.map(n=>n.py),x0=Math.min(...xs)-60,x1=Math.max(...xs)+60,y0=Math.min(...ys)-60,y1=Math.max(...ys)+80,w=Math.max(300,x1-x0),h=Math.max(300,y1-y0),k=Math.max(w/innerWidth,h/(innerHeight*.6));VB={x:(x0+x1)/2-innerWidth*k/2,y:(y0+y1)/2-innerHeight*.6*k/2,w:innerWidth*k,h:innerHeight*.6*k}}
+ VB=VB||{x:-200,y:-200,w:400,h:400};
+ const ed=g.E.map(e=>{const a=ix[e[0]],b=ix[e[1]];return'<line x1="'+a.px+'" y1="'+a.py+'" x2="'+b.px+'" y2="'+b.py+'" stroke="'+(e[2]?"var(--ac)":"var(--mut)")+'" stroke-width="1.5" '+(e[2]?'stroke-dasharray="5 4" ':"")+'marker-end="url(#ar'+e[2]+')"/>'}).join("");
+ const nd=g.N.map((n,i)=>{const x=n.x,c=x.col||["#2f6fed","#3aa66b","#e8892b"][n.l],r=n.r,tg=(x.tags||[]).map(y=>"#"+y).join(" "),lb=[o.ti?x.name||"Без назви":"",o.sub?x.sub||x.desc||"":"",o.tg?tg:""].filter(Boolean);
+  return'<g data-g="'+esc(n.id)+'" transform="translate('+n.px+','+n.py+')" style="cursor:pointer"><circle r="'+r+'" fill="'+c+'" stroke="'+(n.id==TFS?"#000":"#fff")+'" stroke-width="2.5"/>'+(o.img&&x.img?'<clipPath id="cp'+i+'"><circle r="'+(r-2)+'"/></clipPath><image href="'+esc(x.img)+'" x="'+-(r-2)+'" y="'+-(r-2)+'" width="'+2*(r-2)+'" height="'+2*(r-2)+'" clip-path="url(#cp'+i+')" preserveAspectRatio="xMidYMid slice"/>':o.em&&x.emo?'<text text-anchor="middle" dy=".35em" font-size="'+r+'">'+esc(x.emo)+'</text>':"")+lb.map((t,k)=>'<text y="'+(r+13+k*12)+'" text-anchor="middle" font-size="11" fill="var(--tx)" '+(k?'opacity=".7"':"")+'>'+esc(t.length>22?t.slice(0,21)+"…":t)+'</text>').join("")+'</g>'}).join("");
+ const ck=(k,l)=>'<label style="display:inline-flex;gap:4px;align-items:center;margin-right:10px"><input type="checkbox" '+(o[k]?"checked":"")+' onchange="tvSet(\''+k+'\',this.checked?1:0)">'+l+'</label>',cs_=[...new Set([...DB.cats,...DB.brs,...DB.notes].filter(x=>!x.del&&x.col).map(x=>x.col))];
+ return bar("🌳 Древо",TFS?'<button onclick="TFS=null;R()">✕ Фокус</button>':"")+'<details style="margin-bottom:8px"><summary>Налаштування карти</summary><label>Вигляд</label><select onchange="VB=null;tvSet(\'lay\',this.value)">'+[["tree","Дерево"],["radial","Радіально"],["chaos","Хаотично"]].map(a=>'<option value="'+a[0]+'" '+(o.lay==a[0]?"selected":"")+'>'+a[1]+'</option>').join("")+'</select><label>Колір</label><select onchange="VB=null;tvSet(\'col\',this.value)"><option value="">Усі</option>'+cs_.map(c=>'<option value="'+c+'" '+(o.col==c?"selected":"")+'>● '+c+'</option>').join("")+'</select><p>'+ck("kc","Категорії")+ck("kb","Гілки")+ck("kn","Нотатки")+'<br>'+ck("str","Структура")+ck("ref","Посилання [[ ]]")+'<br>'+ck("img","Картинка")+ck("em","Емодзі")+ck("ti","Заголовок")+ck("sub","Верхній текст")+ck("tg","Теги")+'</p></details><svg id="tv" viewBox="'+VB.x+' '+VB.y+' '+VB.w+' '+VB.h+'" style="width:100%;height:calc(100vh - 250px);min-height:300px;background:var(--card);border:1px solid var(--ln);border-radius:12px;touch-action:none"><defs><marker id="ar0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--mut)"/></marker><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--ac)"/></marker></defs>'+ed+nd+'</svg>'+(g.N.length?"":'<p class="mut">Немає вузлів за цими умовами</p>')+'<p class="mut" style="font-size:12px">Щипок — масштаб, перетягування — рух, тап по вузлу — меню. Пунктир — посилання [[ ]] між нотатками.</p>'}
+function tvSet(k,v){tvO()[k]=v;save();R()}
+function bindTree(){const sv=$("#tv");if(!sv)return;const P=new Map();let mv=0,d0=0;const pt=e=>{const r=sv.getBoundingClientRect();return[VB.x+(e.clientX-r.left)/r.width*VB.w,VB.y+(e.clientY-r.top)/r.height*VB.h]},ap=()=>sv.setAttribute("viewBox",VB.x+" "+VB.y+" "+VB.w+" "+VB.h);
+ const zoom=(f,cx,cy)=>{VB.x=cx-(cx-VB.x)*f;VB.y=cy-(cy-VB.y)*f;VB.w*=f;VB.h*=f;ap()};
+ sv.onpointerdown=e=>{P.set(e.pointerId,[e.clientX,e.clientY]);mv=0;d0=0;try{sv.setPointerCapture(e.pointerId)}catch(_){}};
+ sv.onpointermove=e=>{if(!P.has(e.pointerId))return;const o=P.get(e.pointerId),r=sv.getBoundingClientRect();
+  if(P.size==1){const dx=e.clientX-o[0],dy=e.clientY-o[1];mv+=Math.abs(dx)+Math.abs(dy);VB.x-=dx/r.width*VB.w;VB.y-=dy/r.height*VB.h;ap()}
+  else if(P.size==2){const q=[...P.entries()].find(([k])=>k!=e.pointerId)[1],nd=Math.hypot(e.clientX-q[0],e.clientY-q[1]);if(d0){const c=pt({clientX:(e.clientX+q[0])/2,clientY:(e.clientY+q[1])/2});zoom(d0/nd,c[0],c[1])}d0=nd;mv=99}
+  P.set(e.pointerId,[e.clientX,e.clientY])};
+ sv.onpointerup=sv.onpointercancel=e=>{const g=e.target.closest&&e.target.closest("[data-g]");P.delete(e.pointerId);d0=0;if(e.type=="pointerup"&&mv<8&&g)tvNode(g.dataset.g)};
+ sv.onwheel=e=>{e.preventDefault();const c=pt(e);zoom(e.deltaY>0?1.15:.87,c[0],c[1])}}
+function tvNode(id){const[t,i]=id.split(":"),x=G(t,i);if(!x)return;const v={cats:"cat",brs:"br",notes:"note"}[t],w=t=="notes"?stats(x):null;
+ show('<h3>'+ic(x)+esc(x.name||"Без назви")+(x.col?' <span style="color:'+x.col+'">●</span>':"")+'</h3><p class="mut" style="font-size:14px">'+({cats:"Категорія",brs:"Гілка",notes:"Нотатка"})[t]+(w?" · слів: "+w.w+" · символів: "+w.ch:"")+"<br>Створено: "+fdt(x.created)+"<br>Змінено: "+fdt(x.edited)+((x.tags||[]).length?"<br>"+x.tags.map(y=>"#"+esc(y)).join(" "):"")+'</p><button class="menu" onclick="cl();nav(\''+v+"','"+i+'\')">➡️ Перейти і читати</button><button class="menu" onclick="cl();TFS=\''+id+'\';VB=null;R()">🎯 Фокус на цьому вузлі</button><button class="menu" onclick="cl();lookEd(\''+t+"','"+i+'\')">🎨 Колір, емодзі, картинка</button>'+(t!="notes"?'<button class="menu" onclick="infoCB(\''+t+"','"+i+'\')">ℹ️ Інформація</button>':"")+'<div class="bt"><button onclick="cl()">Закрити</button></div>')}
+
+// ---- 20. Експорт нотатки з редагуванням метаданих ----
+function mdExp(){const n=cur(),b=brOf(n);ask("Метадані експорту",[["Заголовок",n.name||""],["Автор",DB.author||""],["Теги",(n.tags||[]).join(", ")],["Дата",fdt(n.edited)],["Примітка",""]],v=>{DB.author=v[1];save();const f=(v[0]||"note").replace(/[^\p{L}\p{N}]+/gu,"_"),fm=$("#mf").value,body=n.type=="code"?plain(n.html):toTxt(n),meta=[["Title",v[0]],["Author",v[1]],["Tags",v[2]],["Date",v[3]],["Note",v[4]]].filter(x=>x[1]);
+ if(fm=="html")dl(f+".html",'<meta charset=utf-8>'+meta.map(x=>'<meta name="'+x[0].toLowerCase()+'" content="'+esc(x[1])+'">').join("")+'<h1>'+esc(v[0])+'</h1>'+n.html,"text/html");
+ else if(fm=="md")dl(f+".md","---\n"+meta.map(x=>x[0].toLowerCase()+": "+x[1]).join("\n")+"\n---\n\n"+body,"text/markdown");
+ else dl(f+".txt",meta.map(x=>x[0]+": "+x[1]).join("\n")+"\n\n"+body,"text/plain");toast("Файл збережено")},'<label>Формат</label><select id="mf"><option value="txt">TXT</option><option value="md">Markdown</option><option value="html">HTML</option></select><p class="mut" style="font-size:12px">Ідентифікатор нотатки не експортується.</p>')}
+(function(){const p=expNote;expNote=function(){p();const bx=$("#m .box"),bt=bx&&bx.querySelector(".bt");if(bx)(bt||bx).insertAdjacentHTML(bt?"beforebegin":"beforeend",'<button class="menu" onclick="mdExp()">📝 З метаданими (редагувати)…</button>')}})();
+
+// ---- 21. Власна тема ----
+(function(){const p=applyStyle;applyStyle=function(){p();const s=ST(),r=document.documentElement;[["ca","--ac"],["cb","--bg"],["cc","--card"]].forEach(([k,v])=>s[k]?r.style.setProperty(v,s[k]):r.style.removeProperty(v))};
+const q=vSet;vSet=function(){const h=q();if(S.ss!="sty")return h;const s=ST(),c=(k,l,d)=>'<label>'+l+'</label><input type="color" value="'+(s[k]||d)+'" onchange="setSt(\''+k+'\',this.value)">';return h+'<h3>Власна тема</h3>'+c("ca","Акцентний колір","#2f6fed")+c("cb","Фон","#f6f6f3")+c("cc","Картки","#ffffff")+'<div class="tb"><button onclick="[\'ca\',\'cb\',\'cc\'].forEach(k=>delete ST()[k]);save();applyStyle();R()">Скинути тему</button></div>'}})();
+applyStyle();
+
+// ---- головна: кнопки Древо / Фільтри ----
+(function(){const p=vHome;vHome=function(){return p().replace('<div id="hb">','<div id="hb"><div class="bt" style="justify-content:flex-start"><button onclick="nav(\'tree\',null)">🌳 Древо</button><button onclick="flt()">🔎 Фільтри</button></div>')}})();
+
 </script></body></html>
