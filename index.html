@@ -48,10 +48,30 @@ html,body{overscroll-behavior:none}#main{overscroll-behavior-y:none}body{-webkit
 .ed:empty:before{content:attr(data-ph)}.dim{opacity:.7}.dim b{color:var(--mut);font-weight:400}
 .dme{font-size:14px;line-height:14px}.dmi{width:16px;height:16px;border-radius:4px;display:block;margin:0 auto;object-fit:cover}.wk .dme{font-size:28px;line-height:32px}.wk .dmi{width:34px;height:34px}
 .row[data-gh]{opacity:.45;background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(128,128,128,.2) 6px 8px)}[data-lp]{-webkit-touch-callout:none;user-select:none}.bar h2{cursor:pointer}
+/* ---- v6.0: нотатки з кодом ---- */
+:root{--hk:#cf222e;--ht:#0e7490;--hl:#0550ae;--hs:#0a7f3f;--hc:#6a737d;--hn:#b35900;--ho:#57606a;--hf:#8250df;--hp:#953800;--hv:#bc4c00}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--hk:#ff7b72;--ht:#56d4dd;--hl:#79c0ff;--hs:#7ee787;--hc:#8b949e;--hn:#ffa657;--ho:#9aa3ad;--hf:#d2a8ff;--hp:#e3b341;--hv:#f2cc60}}
+:root[data-theme="dark"],:root[data-theme="black"]{--hk:#ff7b72;--ht:#56d4dd;--hl:#79c0ff;--hs:#7ee787;--hc:#8b949e;--hn:#ffa657;--ho:#9aa3ad;--hf:#d2a8ff;--hp:#e3b341;--hv:#f2cc60}
+.h-k,.h-g{color:var(--hk)}.h-t{color:var(--ht)}.h-l,.h-a{color:var(--hl)}.h-s{color:var(--hs)}.h-c{color:var(--hc)}.h-n{color:var(--hn)}.h-o{color:var(--ho)}.h-f{color:var(--hf)}.h-p{color:var(--hp)}.h-v{color:var(--hv)}
+.ed.kd-w{--cf:14px;--lh:21px;--pd:10px;--n:1;display:flex;min-height:0;padding:0;background:var(--card);background-attachment:scroll;border:1px solid var(--ln);border-radius:10px;box-shadow:none;overflow:hidden;font:var(--cf)/var(--lh) ui-monospace,SFMono-Regular,Menlo,Consolas,"Roboto Mono","DejaVu Sans Mono","Liberation Mono",monospace;letter-spacing:0;font-variant-ligatures:none;-webkit-text-size-adjust:none;text-size-adjust:none;tab-size:4;-moz-tab-size:4}
+.kd-g{flex:none;box-sizing:content-box;margin:0;padding:var(--pd) 8px;text-align:right;color:var(--mut);border-right:1px solid var(--ln);font:inherit;letter-spacing:inherit;overflow:hidden;-webkit-user-select:none;user-select:none}
+.kd-nln .kd-g{display:none}
+.kd-x{position:relative;flex:1;min-width:0;height:calc(var(--lh)*(var(--n) + 1) + 2*var(--pd));min-height:40vh}
+.kd-p,.kd-t{position:absolute;inset:0;box-sizing:border-box;width:100%;height:100%;margin:0;padding:var(--pd) 10px;border:0;border-radius:0;background:none;font:inherit;letter-spacing:inherit;tab-size:inherit;-moz-tab-size:inherit;white-space:pre;overflow-wrap:normal;word-break:normal}
+.kd-p{overflow:hidden;pointer-events:none;color:var(--tx)}
+.kd-p code{font:inherit;white-space:inherit}
+.kd-t{resize:none;overflow-x:auto;overflow-y:hidden;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--tx);outline:none;scrollbar-width:none}
+.kd-t::-webkit-scrollbar{display:none}
+.kd-t::placeholder{color:var(--mut);-webkit-text-fill-color:var(--mut);opacity:1}
+.kd-t::selection{background:color-mix(in srgb,var(--ac) 35%,transparent)}
+.kd-b select{max-width:8.5em}.kd-b button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.kd-s{gap:4px}.kd-s button{min-width:38px;padding:7px 8px;text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.kd-sep{flex:none;width:1px;height:22px;background:var(--ln);margin:0 3px}
+.kd-bd{display:inline-block;font:600 .72em ui-monospace,Menlo,Consolas,monospace;background:var(--ln);color:var(--mut);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+#fab2{position:fixed;right:24px;bottom:calc(134px + env(safe-area-inset-bottom,0px));width:42px;height:42px;border-radius:50%;background:var(--card);color:var(--ac);border:1px solid var(--ac);font:700 13px ui-monospace,Menlo,Consolas,monospace;box-shadow:0 2px 6px #0003;padding:0;display:none}
 </style></head><body>
 <div id="app"><div id="main"></div>
 <nav><button id="n1" onclick="tab('home')">🏠 Домівка</button><button id="n2" onclick="tab('set')">⚙️ Налаштування</button></nav></div>
-<button id="fab">＋</button><div id="m"></div><div id="sb"></div><div id="eb" onmousedown="event.preventDefault()"></div><div id="cv">📒</div><div id="lk"></div><div id="tst" onclick="this.style.display='none'"></div>
+<button id="fab">＋</button><button id="fab2" onclick="newCode(S.id)">&lt;/&gt;</button><div id="m"></div><div id="sb"></div><div id="eb" onmousedown="event.preventDefault()"></div><div id="cv">📒</div><div id="lk"></div><div id="tst" onclick="this.style.display='none'"></div>
 <script>
 let DB={cats:[],brs:[],notes:[],tags:[]},S={v:"home",id:null,cal:"month",d:new Date(),sort:{},q:""},stack=[],H,lastR,ED,SEL=null,lp,lpd,PIN_B="",PIN_OK,PIN_CB,hid=0;
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36),now=()=>Date.now();
@@ -895,6 +915,174 @@ const _t3=`Дата|Дата|Date|Date
 Ходи сюди|Ходи сюда|Come here|Come here`.split("\n").map(l=>l.split("|"));_t3.forEach(r=>{if(!TR.some(t=>t[0]==r[0]))TR.push([r[0],r[2],r[3]]);if(!SZP.some(t=>t[0]==r[0]))SZP.push([r[0],r[1]])});SZP.sort((a,b)=>b[0].length-a[0].length);TR.sort((a,b)=>b[0].length-a[0].length);
 const SECE=`<h3>How your data is protected</h3><ul class="mut" style="padding-left:18px"><li>Notes are stored only on this device. The app sends nothing to the internet.</li><li>The database in device storage is encrypted (AES-256-GCM). The key is created on the device and cannot be extracted.</li><li>The app cache holds only code and icons, never your texts.</li><li>The PIN and recovery phrase are stored inside the encrypted database.</li><li>Backup files can be password-protected (PBKDF2 + AES-256-GCM). Without the password they cannot be opened.</li><li>If you clear browser data or uninstall the app, your notes are gone. Make backups.</li></ul>`;
 const _vS6=vSet;vSet=function(){let h=_vS6();if(S.ss=="sec"){const L=ST().lang||"uk",i=h.indexOf("<h3>Як захищені");if(i>=0&&L!="uk")h=h.slice(0,i)+(L=="sz"?trs(SECI):SECE)}return h};
+// ================= v6.0: нотатки з кодом =================
+// Тип нотатки "code": n.type="code", n.lang=<id мови>, текст коду лежить у n.html (екранований),
+// тому пошук, назва-за-замовчуванням, резервні копії й зв'язки працюють без змін.
+const kdS=()=>DB.kd=Object.assign({ln:1,fs:14,ind:4,ac:1,ai:1,last:"py"},DB.kd||{});
+if(typeof KS!="undefined"&&!KS.includes("kd"))KS.push("kd");
+const kdRe=s=>s.replace(/[.*+?^${}()|[\]\\\/-]/g,"\\$&");
+const KDL={};
+const kdDef=(id,n,e,o)=>{KDL[id]=Object.assign({id,n,e},o)};
+const kdW=s=>new Set(s.split(" "));
+// ---- таблиця мов: щоб додати мову, додайте один рядок kdDef(...) нижче й її id у KD_MAIN або лишіть у «інших» ----
+// k — ключові слова, T — типи/вбудовані, V — літерали, lc — рядкові коментарі, bc — блокові, q — лапки,
+// x — додаткові токени [клас, regex], m — багаторядковий режим (^), i — без урахування регістру, z — «прозорий» текст, o:0 — без операторів
+kdDef("text","Без мови (Plain text)","txt",{t:1,b:"TXT"});
+kdDef("c","C","c",{m:1,k:"auto break case const continue default do else enum extern for goto if inline register restrict return sizeof static struct switch typedef union volatile while",T:"int char short long float double void signed unsigned size_t bool FILE uint8_t uint16_t uint32_t uint64_t int8_t int16_t int32_t int64_t printf scanf malloc free",V:"NULL true false",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["p",/^[ \t]*#[ \t]*include(?:[ \t]*<[^>\n]*>)?/.source],["p",/^[ \t]*#[ \t]*\w+/.source]]});
+kdDef("cpp","C++","cpp",{m:1,k:KDL.c.k+" alignas alignof and asm catch class concept constexpr const_cast decltype delete dynamic_cast explicit export final friend mutable namespace new noexcept operator or override private protected public reinterpret_cast requires static_assert static_cast template this thread_local throw try typeid typename using virtual co_await co_return co_yield",T:KDL.c.T+" string vector map set unordered_map unordered_set list deque array pair tuple unique_ptr shared_ptr optional variant wchar_t char8_t char16_t char32_t auto cout cin endl std",V:"NULL true false nullptr",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:KDL.c.x});
+kdDef("cs","C#","cs",{m:1,k:"abstract as base break case catch checked class const continue default delegate do else enum event explicit extern finally fixed for foreach goto if implicit in interface internal is lock namespace new operator out override params private protected public readonly ref return sealed sizeof stackalloc static struct switch this throw try typeof unchecked unsafe using virtual volatile while var async await record init get set where yield partial global when with required",T:"bool byte char decimal double float int long object sbyte short string uint ulong ushort void dynamic nint nuint String List Dictionary Task Console Math",V:"true false null",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["p",/^[ \t]*#[ \t]*\w+/.source],["s",/@"(?:""|[^"])*"?/.source]]});
+kdDef("py","Python","py",{k:"and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield match case",T:"int str float bool list dict set tuple bytes object type range len print self cls super open input enumerate zip map filter sorted isinstance Exception",V:"True False None",lc:["#"],q:"\"'",x:[["s",/"""[\s\S]*?(?:"""|$)/.source],["s",/'''[\s\S]*?(?:'''|$)/.source],["p",/@[A-Za-z_][\w.]*/.source]]});
+kdDef("js","JavaScript","js",{k:"async await break case catch class const continue debugger default delete do else export extends finally for from function if import in instanceof let new of return static super switch this throw try typeof var void while with yield as",T:"Array Object String Number Boolean Map Set Promise Date Math JSON RegExp Error Symbol BigInt console window document",V:"true false null undefined NaN Infinity",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["s",/`(?:\\[\s\S]|[^`\\])*`?/.source]]});
+kdDef("ts","TypeScript","ts",{k:KDL.js.k+" interface type enum implements namespace declare abstract readonly private public protected keyof infer is satisfies override module constructor",T:KDL.js.T+" string number boolean any unknown never object symbol bigint Record Partial Readonly Pick Omit",V:KDL.js.V,lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["s",/`(?:\\[\s\S]|[^`\\])*`?/.source],["p",/@[A-Za-z_]\w*/.source]]});
+kdDef("html","HTML","html",{h:s=>kdHtml(s)});
+kdDef("css","CSS","css",{h:s=>kdCss(s)});
+kdDef("json","JSON","json",{q:"\"",V:"true false null",key:1,o:0});
+kdDef("sql","SQL","sql",{i:1,k:"select from where insert into values update set delete create alter drop table index view database schema join inner left right outer full cross on as and or not in is null like between exists distinct group by order having limit offset union all case when then else end primary key foreign references default unique check constraint with returning asc desc using begin commit rollback transaction truncate grant revoke if replace trigger procedure function declare cast over partition add column",T:"int integer bigint smallint tinyint decimal numeric float double real varchar char text boolean bool date time timestamp datetime blob json serial uuid count sum avg min max coalesce now",V:"null true false",lc:["--"],bc:[["/*","*/"]],q:"\"'",x:[["p",/`[^`\n]*`/.source]]});
+kdDef("sh","Bash","sh",{k:"if then else elif fi for while until do done case esac in function select time return exit break continue local export readonly declare unset shift source alias trap set",T:"echo printf cd ls cat grep sed awk find cp mv rm mkdir chmod chown sudo curl wget tar git test read eval exec kill ps head tail sort uniq wc cut tr xargs touch",V:"",q:"\"'",x:[["v",/\$(?:[A-Za-z_]\w*|\{[^}\n]*\}|[0-9@#?*!$-])/.source],["c",/#[^\n]*/.source]]});
+// ---- додаткові мови ----
+kdDef("java","Java","java",{k:"abstract assert break case catch class const continue default do else enum extends final finally for goto if implements import instanceof interface native new package private protected public return static strictfp super switch synchronized this throw throws transient try var volatile while record sealed permits yield",T:"boolean byte char double float int long short void String Integer Long Double Boolean List Map Set ArrayList HashMap Object System Math",V:"true false null",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["s",/"""[\s\S]*?(?:"""|$)/.source],["p",/@[A-Za-z_]\w*/.source]]});
+kdDef("kt","Kotlin","kt",{k:"as break class continue do else for fun if in interface is object package return super this throw try typealias val var when while by catch constructor finally get import init set where abstract annotation companion const data enum final infix inline inner internal lateinit open operator out override private protected public reified sealed suspend vararg",T:"Int Long Short Byte Float Double Boolean Char String Unit Any Nothing List Map Set Array println",V:"true false null",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["s",/"""[\s\S]*?(?:"""|$)/.source],["p",/@[A-Za-z_]\w*/.source]]});
+kdDef("go","Go","go",{k:"break case chan const continue default defer else fallthrough for func go goto if import interface map package range return select struct switch type var",T:"int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64 uintptr float32 float64 complex64 complex128 string bool byte rune error any make len cap append new panic recover print println",V:"true false nil iota",lc:["//"],bc:[["/*","*/"]],q:"\"'",x:[["s",/`[^`]*`?/.source]]});
+kdDef("rs","Rust","rs",{k:"as async await break const continue crate dyn else enum extern fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait type unsafe use where while",T:"i8 i16 i32 i64 i128 isize u8 u16 u32 u64 u128 usize f32 f64 bool char str String Vec Option Result Box Rc Arc HashMap",V:"true false None Some Ok Err",lc:["//"],bc:[["/*","*/"]],q:"\"",x:[["s",/'(?:\\.|[^'\\\n])'/.source],["p",/'[A-Za-z_]\w*/.source],["p",/#!?\[[^\]\n]*\]/.source],["f",/[A-Za-z_]\w*!(?=[(\[{])/.source]]});
+kdDef("php","PHP","php",{k:"abstract and as break callable case catch class clone const continue declare default do echo else elseif empty endfor endforeach endif endswitch endwhile enum extends final finally fn for foreach function global goto if implements include include_once instanceof insteadof interface isset list match namespace new or print private protected public readonly require require_once return static switch throw trait try unset use var while xor yield",T:"array bool callable float int iterable mixed object string void self parent",V:"true false null TRUE FALSE NULL",lc:["//","#"],bc:[["/*","*/"]],q:"\"'",x:[["p",/<\?php|<\?=|\?>/.source],["v",/\$[A-Za-z_]\w*/.source]]});
+kdDef("rb","Ruby","rb",{k:"alias and begin break case class def do else elsif end ensure for if in module next not or redo rescue retry return self super then undef unless until when while yield require require_relative include extend attr_accessor attr_reader attr_writer puts print raise lambda proc",T:"String Integer Float Array Hash Symbol Object Class Module Struct",V:"true false nil",lc:["#"],q:"\"'",x:[["l",/:[A-Za-z_]\w*[?!]?/.source],["v",/@@?[A-Za-z_]\w*/.source]]});
+kdDef("lua","Lua","lua",{k:"and break do else elseif end for function goto if in local not or repeat return then until while",T:"print pairs ipairs require string table math os io type tostring tonumber setmetatable getmetatable",V:"true false nil",bc:[["--[[","]]"]],lc:["--"],q:"\"'"});
+kdDef("xml","XML","xml",{h:s=>kdHtml(s)});
+kdDef("yaml","YAML","yaml",{m:1,o:0,V:"true false null yes no on off",lc:["#"],q:"\"'",x:[["p",/^[ \t-]*[\w."'\/-]+(?=[ \t]*:(?:[ \t]|$))/.source]]});
+kdDef("md","Markdown","md",{m:1,z:1,q:"",x:[["s",/^```[\s\S]*?(?:^```[^\n]*|(?![\s\S]))/.source],["k",/^#{1,6}[^\n]*/.source],["s",/`[^`\n]+`/.source],["l",/^[ \t]*(?:[-*+]|\d+\.)(?=[ \t])/.source],["p",/\*\*[^*\n]+\*\*|__[^_\n]+__/.source],["f",/\[[^\]\n]*\]\([^)\n]*\)/.source]]});
+const KD_MAIN=["text","c","cpp","cs","py","js","ts","html","css","json","sql","sh"];
+const kdLg=n=>KDL[n&&n.lang]||KDL.text;
+
+// ---- підсвітка: один прохід за мовою, без бібліотек і без мережі ----
+function kdComp(L){if(L.R)return;const P=[];
+ (L.bc||[]).forEach(b=>P.push(["c",kdRe(b[0])+"[\\s\\S]*?(?:"+kdRe(b[1])+"|$)"]));
+ (L.lc||[]).forEach(a=>P.push(["c",kdRe(a)+"[^\\n]*"]));
+ (L.x||[]).forEach(p=>P.push(p));
+ (L.q||"").split("").forEach(q=>{const e=kdRe(q);P.push(["s",e+"(?:\\\\.|[^"+e+"\\\\\\n])*"+e+"?"])});
+ if(!L.z){P.push(["n",/\b0[xX][\da-fA-F_]+[uUlL]*\b|\b0[bB][01_]+\b|\b\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?[fFdDlLuUmM]*\b|\.\d+(?:[eE][+-]?\d+)?[fF]?\b/.source]);
+  P.push(["w",/[A-Za-z_$\u00c0-\uffff][\w$\u00c0-\uffff]*/.source]);
+  if(L.o!==0)P.push(["o",/[-+*%=<>!&|^~?:]+|\/(?![\/*])/.source])}
+ L.R=new RegExp(P.map(p=>"("+p[1]+")").join("|"),"g"+(L.m?"m":""));L.C=P.map(p=>p[0]);
+ L.K=kdW(L.k||"");L.T2=kdW(L.T||"");L.V2=kdW(L.V||"")}
+function kdHl(s,id){const L=KDL[id]||KDL.text;if(L.t||!s)return esc(s);if(L.h)return L.h(s);
+ try{kdComp(L);const re=L.R;re.lastIndex=0;let o="",p=0,m;
+  while((m=re.exec(s))){if(!m[0]){re.lastIndex++;continue}
+   let k=1;while(m[k]===undefined)k++;let c=L.C[k-1];const t=m[0];
+   if(c=="w"){const w=L.i?t.toLowerCase():t;c=L.K.has(w)?"k":L.T2.has(w)?"t":L.V2.has(w)?"l":s[re.lastIndex]=="("?"f":""}
+   else if(c=="s"&&L.key){let j=re.lastIndex;while(s[j]==" "||s[j]=="\t")j++;if(s[j]==":")c="p"}
+   o+=esc(s.slice(p,m.index))+(c?`<span class="h-${c}">${esc(t)}</span>`:esc(t));p=re.lastIndex}
+  return o+esc(s.slice(p))}catch(e){return esc(s)}}
+function kdAttrs(a){let o="",p=0,m;const r=/("[^"]*"?|'[^']*'?)|([^\s=\/"']+)/g;while((m=r.exec(a))){o+=esc(a.slice(p,m.index))+`<span class="h-${m[1]?"s":"a"}">${esc(m[0])}</span>`;p=r.lastIndex}return o+esc(a.slice(p))}
+function kdHtml(s){const re=/<!--[\s\S]*?(?:-->|$)|<(\/?)([A-Za-z][\w:.-]*)((?:"[^"]*"?|'[^']*'?|[^>"'])*)(>?)|&#?\w+;/g,low=s.toLowerCase();let o="",p=0,m;
+ while((m=re.exec(s))){o+=esc(s.slice(p,m.index));const t=m[0];
+  if(t[0]=="&")o+=`<span class="h-l">${esc(t)}</span>`;
+  else if(t.startsWith("<!--"))o+=`<span class="h-c">${esc(t)}</span>`;
+  else{o+=`<span class="h-g">&lt;${m[1]}${esc(m[2])}</span>`+kdAttrs(m[3])+(m[4]?`<span class="h-g">&gt;</span>`:"");
+   const nm=m[2].toLowerCase();
+   if(!m[1]&&m[4]&&(nm=="script"||nm=="style")&&!/\/\s*$/.test(m[3])){const e=low.indexOf("</"+nm,re.lastIndex),st=e<0?s.length:e;o+=kdHl(s.slice(re.lastIndex,st),nm=="script"?"js":"css");re.lastIndex=st}}
+  p=re.lastIndex}
+ return o+esc(s.slice(p))}
+function kdCss(s){const D=[];s.replace(/[;{}]/g,(c,i)=>{D.push([i,c]);return c});let dp=0,o="",p=0,m;
+ const re=/\/\*[\s\S]*?(?:\*\/|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|@[\w-]+|#[\w-]+|!important|-?(?:\d*\.)?\d+(?:%|[a-zA-Z]+)?|[A-Za-z_-][\w-]*/g;
+ while((m=re.exec(s))){const t=m[0],i=m.index,a=t[0];while(dp<D.length&&D[dp][0]<i)dp++;const sel=dp<D.length&&D[dp][1]=="{";let c="";
+  if(a=="/"&&t[1]=="*")c="c";else if(a=='"'||a=="'")c="s";else if(a=="@"||t=="!important")c="k";
+  else if(a=="#")c=sel?"l":/^#[\da-fA-F]{3,8}$/.test(t)?"n":"";
+  else if(/^-?(?:\d*\.)?\d/.test(t))c=sel?"":"n";
+  else{let j=i+t.length;while(s[j]==" "||s[j]=="\t")j++;
+   if(sel){const pc=s[i-1];c=pc=="."?"t":pc==":"?"f":"g"}else if(s[j]==":")c="p";else if(s[j]=="(")c="f"}
+  o+=esc(s.slice(p,i))+(c?`<span class="h-${c}">${esc(t)}</span>`:esc(t));p=re.lastIndex}
+ return o+esc(s.slice(p))}
+
+// ---- редактор: прозорий textarea поверх підсвіченого <pre> ----
+let KT,KW,KP,KPre,KG,KN=0,KQ=0;
+const kdCode=n=>n&&n.html?plain(n.html):"";
+const kdUnit=()=>{const i=kdS().ind;return i?" ".repeat(i):"\t"};
+const kdIndL=()=>"⇥ "+(kdS().ind||"Tab");
+const kdOn=k=>kdS()[k]?" on":"";
+function kdOpts(sel){const o=id=>`<option value="${id}" ${id==sel?"selected":""}>${esc(KDL[id].n)}</option>`;return KD_MAIN.map(o).join("")+'<option disabled>──────</option>'+Object.keys(KDL).filter(k=>!KD_MAIN.includes(k)).map(o).join("")}
+function kdCtl(n){return`<div class="tb kd-b"><select id="kd-sel" onchange="kdLang(this.value)">${kdOpts(n.lang||"text")}</select><button id="kd-b-ln" class="${kdOn("ln").trim()}" onclick="kdTog('ln')">№ Рядки</button><button onclick="kdFs(-1)">A−</button><button onclick="kdFs(1)">A+</button><button id="kd-b-ind" onclick="kdInd()">${kdIndL()}</button><button id="kd-b-ac" class="${kdOn("ac").trim()}" onclick="kdTog('ac')">() Автодужки</button></div>`}
+function kdEdH(n){return kdCtl(n)+`<div id="ed" class="ed kd-w"><pre id="kd-g" class="kd-g" aria-hidden="true"></pre><div class="kd-x"><pre id="kd-p" class="kd-p" aria-hidden="true"><code></code></pre><textarea id="kd-t" class="kd-t" wrap="off" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false"></textarea></div></div>`}
+function kdView(){if(!KT||!KT.isConnected)return;const v=KT.value,n=cur(),s=kdS(),lh=Math.round(s.fs*1.5);let c=1,i=-1;while((i=v.indexOf("\n",i+1))>=0)c++;
+ KW.style.setProperty("--cf",s.fs+"px");KW.style.setProperty("--lh",lh+"px");KW.style.setProperty("--n",c);KW.classList.toggle("kd-nln",!s.ln);
+ if(c!=KN){KN=c;let g="";for(let j=1;j<=c;j++)g+=j+"\n";KG.textContent=g;KG.style.width=Math.max(2,String(c).length)+"ch"}
+ KP.innerHTML=kdHl(v,kdLg(n).id)+"\n";KPre.scrollLeft=KT.scrollLeft}
+function kdSync(){const n=cur();if(!n||!KT||!KT.isConnected)return;n.html=esc(KT.value);n.edited=now();save();
+ if(KT.value.length>30000){if(!KQ)KQ=requestAnimationFrame(()=>{KQ=0;kdView()})}else kdView()}
+function kdRep(s,e,x,ss,se){const t=KT,b=t.value,want=b.slice(0,s)+x+b.slice(e);t.focus();t.setSelectionRange(s,e);let ok=false;try{ok=x===""?document.execCommand("delete"):document.execCommand("insertText",false,x)}catch(_){}
+ if(!ok||t.value!==want){t.value=want;t.dispatchEvent(new Event("input"))}
+ if(ss!=null)t.setSelectionRange(ss,se==null?ss:se)}
+const KPR={"(":")","[":"]","{":"}",'"':'"',"'":"'","`":"`"};
+function kdType(ch){const t=KT,v=t.value,a=t.selectionStart,b=t.selectionEnd,nx=v[b],pv=v[a-1];
+ if(a==b&&nx===ch&&")]}\"'`".includes(ch)){t.setSelectionRange(a+1,a+1);return true}
+ const cl=KPR[ch];if(!cl)return false;
+ if(a!=b){kdRep(a,b,ch+v.slice(a,b)+cl,a+1,b+1);return true}
+ if(nx&&!/[\s)\]}>,;:.]/.test(nx))return false;
+ if(cl==ch&&(/\w/.test(pv||"")||pv=="\\"))return false;
+ kdRep(a,a,ch+cl,a+1);return true}
+function kdEnter(){const t=KT,v=t.value,a=t.selectionStart,b=t.selectionEnd,ls=v.lastIndexOf("\n",a-1)+1,line=v.slice(ls,a),ind=line.match(/^[ \t]*/)[0],pv=v[a-1],nx=v[b],U=kdUnit(),n=cur();
+ let x="\n"+ind,car=null;
+ if(pv&&"{[(".includes(pv)&&KPR[pv]==nx){x="\n"+ind+U+"\n"+ind;car=a+1+ind.length+U.length}
+ else if((pv&&"{[(".includes(pv))||(n.lang=="py"&&/:\s*$/.test(line)))x="\n"+ind+U;
+ kdRep(a,b,x,car==null?a+x.length:car)}
+function kdTab(d){const t=KT,v=t.value,a=t.selectionStart,b=t.selectionEnd,U=kdUnit();
+ if(d>0&&a==b){kdRep(a,b,U);return}
+ const ls=v.lastIndexOf("\n",a-1)+1;let le=v.indexOf("\n",(b>a&&v[b-1]=="\n")?b-1:b);if(le<0)le=v.length;
+ const ln=v.slice(ls,le).split("\n");let first=0;const rx=new RegExp("^(?:\\t| {1,"+(U=="\t"?4:U.length)+"})");
+ const out=ln.map((l,i)=>{if(d>0)return l.length||ln.length==1?U+l:l;const m=l.match(rx),r=m?m[0].length:0;if(i==0)first=r;return l.slice(r)}),x=out.join("\n");
+ if(a==b)kdRep(ls,le,x,Math.max(ls,a-first));else kdRep(ls,le,x,ls,ls+x.length)}
+function kdSym(ch){if(!KT)return;KT.focus();if(!(kdS().ac&&cur().lang!="text"&&kdType(ch)))kdRep(KT.selectionStart,KT.selectionEnd,ch)}
+function kdBI(e){if(e.isComposing||!KT)return;const s=kdS(),n=cur(),t=e.inputType;
+ if(t=="insertText"&&e.data&&e.data.length==1){if(s.ac&&n.lang!="text"&&kdType(e.data))e.preventDefault()}
+ else if((t=="insertLineBreak"||t=="insertParagraph")&&s.ai){e.preventDefault();kdEnter()}
+ else if(t=="deleteContentBackward"&&s.ac&&KT.selectionStart==KT.selectionEnd){const a=KT.selectionStart,v=KT.value;if(a>0&&KPR[v[a-1]]&&KPR[v[a-1]]==v[a]){e.preventDefault();kdRep(a-1,a+1,"",a-1)}}}
+function kdBind(n){ED=KT=$("#kd-t");KW=$("#ed");KG=$("#kd-g");KPre=$("#kd-p");KP=KPre.firstChild;KN=0;
+ KT.value=kdCode(n);KT.placeholder=trs("Пишіть код…");
+ $("#nt").oninput=e=>{n.name=e.target.value;n.edited=now();save()};$("#ns").oninput=e=>{n.sub=e.target.value;n.edited=now();save()};
+ KT.addEventListener("input",kdSync);KT.addEventListener("beforeinput",kdBI);
+ KT.addEventListener("keydown",e=>{if(e.key=="Tab"&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();kdTab(e.shiftKey?-1:1)}});
+ KT.addEventListener("scroll",()=>{KPre.scrollLeft=KT.scrollLeft});
+ kdView()}
+function kdLang(v){const n=cur();n.lang=v;kdS().last=v;n.edited=now();save();kdView()}
+function kdTog(k){const s=kdS();s[k]=s[k]?0:1;save();const b=$("#kd-b-"+k);if(b)b.classList.toggle("on",!!s[k]);kdView()}
+function kdFs(d){const s=kdS();s.fs=Math.min(22,Math.max(10,s.fs+d));save();kdView()}
+function kdInd(){const s=kdS(),o=[2,4,8,0];s.ind=o[(o.indexOf(s.ind)+1)%4];save();const b=$("#kd-b-ind");if(b)b.textContent=kdIndL()}
+// ---- нижня панель над клавіатурою ----
+function kdBarH(){const A=["{","}","(",")","[","]",";",":",'"',"'","=","<",">","/","_","$"],B=["-","+","*","!","&","|","\\","#","%",".",",","@","~","?","^","`"],
+ b=(a,l)=>`<button data-a="${a}">${l}</button>`,c=x=>`<button data-c="${esc(x)}">${esc(x)}</button>`,sp='<i class="kd-sep"></i>';
+ return`<div id="ep"></div><div class="er kd-s" onclick="kdBarClick(event)">${b("ti","⇥")+b("to","⇤")+b("un","↶")+b("re","↷")+sp+A.map(c).join("")+sp+B.map(c).join("")+sp+b("hd","⌄")}</div>`}
+function kdBarClick(e){const b=e.target.closest("button");if(!b||!KT)return;const d=b.dataset;if(d.c!=null){kdSym(d.c);return}
+ KT.focus();({ti:()=>kdTab(1),to:()=>kdTab(-1),un:()=>ur("undo"),re:()=>ur("redo"),hd:()=>KT.blur()})[d.a]()}
+// ---- підключення до наявного застосунку (поверх попередніх шарів) ----
+const _kdV=vNote;vNote=function(){const h=_kdV(),n=S.v=="note"?cur():null;if(!n||n.type!="code")return h;const k='<div id="ed" class="ed" contenteditable="true"></div>';return h.includes(k)?h.replace(k,kdEdH(n)):h};
+const _kdB=bindNote;bindNote=function(){const n=cur();if(!n||n.type!="code"){KT=null;return _kdB()}kdBind(n)};
+const _kdSy=sync;sync=function(){if(KT&&KT.isConnected&&cur()&&cur().type=="code")return kdSync();_kdSy()};
+const _kdE=ebar;ebar=function(){const n=S.v=="note"?cur():null;if(!n||n.type!="code")return _kdE();const e=$("#eb");e.style.display="block";EP=null;e.innerHTML=kdBarH();kdPos()};
+const kdPos=()=>kbPos();
+const _kdM=menu;menu=function(){const n=cur();if(!n||n.type!="code")return _kdM();const s=show;show=function(h){show=s;s(h.replace("⬆ Експорт у TXT","⬆ Експорт коду"))};try{_kdM()}finally{show=s}};
+const _kdN=noteRow;noteRow=function(n,a){let h=_kdN(n,a);if(n.type=="code"){const L=kdLg(n);h=h.replace("</b><small>",`<span class="kd-bd">${esc(L.b||L.n)}</span></b><small>`)}return h};
+const _kdF=fabGo;fabGo=function(){if(S.v=="cat"||S.v=="br")return _kdF();const s=show;show=function(h){show=s;s(h.replace('<button class="menu" onclick="cl();newBr()">','<button class="menu" onclick="cl();newCode()">&lt;/&gt; Нотатка з кодом</button>$&'))};try{_kdF()}finally{show=s}};
+const _kdR=R;R=function(){_kdR();const f=$("#fab2");if(f)f.style.display=S.v=="br"?"block":"none"};
+function mkCode(b,l){const n=mk({br:b,name:"",sub:"",html:"",tags:[],events:[],stamps:[],pinned:0,type:"code",lang:KDL[l]?l:"text"});DB.notes.push(n);G("brs",b).edited=now();kdS().last=n.lang;save();nav("note",n.id)}
+function newCode(b){ask("Нова нотатка з кодом",[],()=>mkCode(b||$("#pb").value,$("#kd-nl").value),(b?"":`<label>Гілка</label><select id="pb">${brOpts()}</select>`)+`<label>Мова коду</label><select id="kd-nl">${kdOpts(kdS().last)}</select>`)}
+// ---- експорт: розширення за мовою, або .txt ----
+function kdFn(n){let f=(n.name||"").trim().replace(/[^\p{L}\p{N}._-]+/gu,"_").replace(/^[_.]+|_+$/g,"").slice(0,60);return f||"code"}
+function kdDl(txt){const n=cur(),L=kdLg(n),f=kdFn(n),e=txt?"txt":L.e,nm=f.toLowerCase().endsWith("."+e)?f:f+"."+e;dl(nm,kdCode(n),txt?"text/plain":"application/octet-stream");cl();toast("Файл збережено")}
+const _kdX=expNote;expNote=function(){const n=cur();if(!n||n.type!="code")return _kdX();const L=kdLg(n),f=kdFn(n),nm=e=>esc(f.toLowerCase().endsWith("."+e)?f:f+"."+e),b=(a,l)=>`<button class="menu" onclick="${a}">${l}</button>`;
+ show("<h3>Експорт коду</h3>"+(L.e!="txt"?b("kdDl(0)","⬇ "+nm(L.e)):"")+b("kdDl(1)","⬇ "+nm("txt"))+b("cl();exp(kdCode(cur()),'Копіювати код')","📋 Копіювати код")+'<div class="bt"><button onclick="cl()">Закрити</button></div>')};
+// ---- підказки, версія, переклади ----
+HINTS.uk.push("Нотатка з кодом: кнопка </> над ＋ у гілці або ＋ → «Нотатка з кодом» на домівці. Мову вибирають угорі нотатки; підсвітка працює без інтернету.","У нотатці з кодом нижня панель має ⇥ ⇤ (відступ і зсув; кількість пробілів або Tab змінює кнопка ⇥ угорі) та символи { } ( ) [ ] ; : тощо. Експорт: ⋮ → «Експорт коду» (файл .py, .js, .cs … або .txt).");
+HINTS.en.push("Code note: the </> button above ＋ inside a branch, or ＋ → “Code note” on Home. Pick the language at the top of the note; highlighting works fully offline.","In a code note the bottom bar has ⇥ ⇤ (indent and outdent; the ⇥ button at the top switches spaces or Tab) and symbols like { } ( ) [ ] ; :. Export: ⋮ → “Export code” (a .py, .js, .cs … or .txt file).");
+const _kdVS=vSet;vSet=function(){let h=_kdVS();if(S.ss=="about")h=h.replace("5.0","6.0");return h};
+const _t4=`Нова нотатка з кодом|Нова нотатка з кодом|New code note|Fresh code note
+Нотатка з кодом|Замєтка с кодом|Code note|Code note
+Мова коду|Язик кода|Code language|Code lingo
+Без мови (Plain text)|Бєз язика (Plain text)|No language (Plain text)|No lingo (Plain text)
+№ Рядки|№ Строки|№ Lines|№ Lines
+() Автодужки|() Автоскобкі|() Auto-close|() Auto-close
+Експорт коду|Єкспорт кода|Export code|Ship out da code
+Копіювати код|Копіровать код|Copy code|Snag da code
+Пишіть код…|Пиши код…|Write code…|Drop yo code here…`.split("\n").map(l=>l.split("|"));
+_t4.forEach(r=>{if(!TR.some(t=>t[0]==r[0]))TR.push([r[0],r[2],r[3]]);if(!SZP.some(t=>t[0]==r[0]))SZP.push([r[0],r[1]])});SZP.sort((a,b)=>b[0].length-a[0].length);TR.sort((a,b)=>b[0].length-a[0].length);
 // ---------- reminders (while app is open) ----------
 setInterval(chkRem,15000);
 (async()=>{const d=await load();if(d&&d.cats)DB=d;DB.tags=DB.tags||[];inbox();applyStyle();flush();sweep();if(DB.pinOn)lockNow();R();chkRem()})();
